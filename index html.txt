@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-[#f8f9f8]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VozÍntegra - Gestão Integrada de Denúncias e Compliance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        vigreen: {
+                            50: '#f2f7f4',
+                            100: '#e3ede6',
+                            200: '#c5dacb',
+                            500: '#2f7445',
+                            700: '#215431',
+                            800: '#1C4428', // Verde Oficial da Logo
+                            900: '#122c1b',
+                            950: '#0b1d12',
+                        },
+                        vigold: {
+                            50: '#fdf8f0',
+                            100: '#faefdc',
+                            200: '#f4dcaf',
+                            500: '#D98B1D', // Dourado/Âmbar Oficial da Logo
+                            600: '#c27915',
+                            700: '#a1600f',
+                            800: '#824c13',
+                            900: '#6b3f14',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .brand-gradient-text {
+            background: linear-gradient(135deg, #1C4428 0%, #2f7445 50%, #D98B1D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans flex flex-col bg-[#f8f9f8]">
+
+    <!-- SIMULADOR DE SCAN DE QR CODE / ACESSO POR EMPRESA (TBAR PARA DEMONSTRAÇÃO) -->
+    <div class="bg-vigreen-950 text-slate-300 text-xs py-2 px-4 flex flex-wrap items-center justify-between border-b border-vigreen-900 gap-2">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-vigold-500/20 text-vigold-500 border border-vigold-500/30 text-[10px] font-mono font-semibold">
+                <i class="fa-solid fa-qrcode"></i> SIMULADOR DE ACESSO POR QR CODE / LINK
+            </span>
+            <span class="hidden sm:inline text-slate-400">Selecione o acesso como se o colaborador estivesse escaneando o QR Code do mural:</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="demo-company-selector" onchange="simularAcessoEmpresa(this.value)" class="bg-vigreen-900 text-white text-xs border border-vigreen-700 rounded-lg px-2.5 py-1 outline-none focus:ring-1 focus:ring-vigold-500">
+                <!-- Opções via JS -->
+            </select>
+        </div>
+    </div>
+
+    <!-- HEADER PRINCIPAL DA PLATAFORMA VOZÍNTEGRA -->
+    <header class="bg-vigreen-900 text-white shadow-xl sticky top-0 z-30 border-b border-vigreen-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                
+                <!-- Logo Oficial VozÍntegra (SVG Vetorial Fiel à Imagem) -->
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="switchTab('denunciar')">
+                    <div class="flex items-center gap-2.5 bg-white px-3.5 py-2 rounded-xl shadow-md border border-slate-100 group-hover:shadow-lg transition">
+                        <!-- Ícone do Logo "Vi" com Cadeado -->
+                        <svg class="h-8 w-auto" viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Letra V (Verde #1C4428) -->
+                            <path d="M12 18 L48 18 L76 96 L104 18 L138 18 L88 128 L62 128 Z" fill="#1C4428"/>
+                            <!-- Hastes do 'i' (Dourado #D98B1D) -->
+                            <rect x="114" y="52" width="24" height="76" rx="4" fill="#D98B1D"/>
+                            <!-- Ponto do 'i' com o Cadeado -->
+                            <circle cx="126" cy="28" r="16" fill="#D98B1D"/>
+                            <!-- Ícone do Cadeado no Ponto (Vazado em Branco) -->
+                            <path d="M122 28 V25 C122 22.8 123.8 21 126 21 C128.2 21 130 22.8 130 25 V28 H131 C132.1 28 133 28.9 133 30 V34 C133 35.1 132.1 36 131 36 H121 C119.9 36 119 35.1 119 34 V30 C119 28.9 119.9 28 121 28 H122 Z M124 28 H128 V25 C128 23.9 127.1 23 126 23 C124.9 23 124 23.9 124 25 V28 Z" fill="#FFFFFF"/>
+                        </svg>
+
+                        <!-- Tipografia do Logo -->
+                        <div class="flex flex-col">
+                            <div class="font-display font-extrabold text-xl leading-none tracking-tight">
+                                <span class="text-vigreen-800">Voz</span>
+                                <span class="text-vigold-500 ml-1">Íntegra</span>
+                            </div>
+                            <span class="text-[9px] font-bold tracking-widest text-slate-400 uppercase mt-0.5">Canal de Ética</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navegação de Telas -->
+                <nav class="flex items-center gap-1.5 bg-vigreen-950/70 p-1.5 rounded-2xl border border-vigreen-800/80">
+                    <button id="btn-tab-denunciar" onclick="switchTab('denunciar')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-vigold-500 text-slate-950 shadow-md">
+                        <i class="fa-solid fa-paper-plane mr-1.5"></i><span class="hidden sm:inline">Nova</span> Manifestação
+                    </button>
+                    <button id="btn-tab-consultar" onclick="switchTab('consultar')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-vigreen-800/50 transition-all duration-200">
+                        <i class="fa-solid fa-magnifying-glass mr-1.5"></i>Consultar <span class="hidden sm:inline">Status</span>
+                    </button>
+                    <button id="btn-tab-admin" onclick="switchTab('admin')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-vigreen-800/50 transition-all duration-200 border-l border-vigreen-800 ml-1">
+                        <i class="fa-solid fa-user-shield mr-1.5 text-vigold-500"></i>Gestão <span class="hidden md:inline">(VozÍntegra Admin)</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================== -->
+        <!-- ABA 1: FORMULÁRIO DE DENÚNCIA PÚBLICO      -->
+        <!-- ========================================== -->
+        <section id="view-denunciar" class="space-y-6">
+            
+            <!-- ALERTA SE A EMPRESA ESTIVER INATIVA / INADIMPLENTE -->
+            <div id="banner-empresa-inativa" class="hidden max-w-3xl mx-auto bg-white border-2 border-rose-200 rounded-3xl p-8 text-center space-y-4 shadow-xl">
+                <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-rose-100 shadow-inner">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 font-display">Canal Temporariamente Indisponível</h3>
+                    <p class="text-sm text-slate-600 max-w-md mx-auto mt-2">
+                        O canal de ouvidoria e ética para a empresa <strong id="inativa-nome-empresa" class="text-slate-900">esta empresa</strong> encontra-se temporariamente suspenso para manutenção administrativa.
+                    </p>
+                </div>
+                <div class="text-xs text-slate-400 pt-4 border-t border-slate-100">
+                    Se você é o gestor responsável por esta conta, entre em contato com o suporte do <strong>VozÍntegra</strong>.
+                </div>
+            </div>
+
+            <!-- CONTAINER FORMULÁRIO NORMAL (EMPRESA ATIVA) -->
+            <div id="container-formulario-ativo" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-4xl mx-auto">
+                
+                <!-- Cabeçalho de Identificação Personalizada da Empresa -->
+                <div class="border-b border-slate-100 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-vigreen-50 text-vigreen-800 border border-vigreen-200">
+                                <i class="fa-solid fa-shield-halved text-vigold-500"></i> Canal Protegido & Independente
+                            </span>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-vigreen-900 font-display">Registrar Manifestação / Denúncia</h2>
+                        <p class="text-slate-600 text-sm mt-1">
+                            Este canal é operado com isenção e total sigilo. Relate desvios éticos, fraudes ou irregularidades.
+                        </p>
+                    </div>
+
+                    <!-- Card da Empresa Alvo (Carregado via QR Code/Link) -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center gap-3.5 min-w-[250px] shadow-sm">
+                        <div class="w-11 h-11 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center font-bold text-xl shadow-sm">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Canal Exclusivo</div>
+                            <div id="active-company-name" class="font-bold text-slate-900 text-sm">Acme Corporation</div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="w-2 h-2 rounded-full bg-vigreen-500"></span>
+                                <span class="text-[10px] text-vigreen-800 font-bold">Canal Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="form-denuncia" onsubmit="handleReportSubmit(event)" class="space-y-6">
+                    
+                    <!-- Opção de Identificação / Anonimato -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
+                            Opção de Identificação do Relato <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label class="border-2 border-slate-200 bg-slate-50 p-4 rounded-2xl flex items-start gap-3.5 cursor-pointer hover:bg-slate-100 transition has-[:checked]:border-vigreen-800 has-[:checked]:bg-vigreen-50/40">
+                                <input type="radio" name="tipo_anonimato" value="anonimo" checked onchange="toggleIdentificacaoFields(false)" class="mt-1 text-vigreen-800 focus:ring-vigreen-700">
+                                <div class="text-xs">
+                                    <div class="font-bold text-slate-900 text-sm mb-0.5"><i class="fa-solid fa-user-ninja mr-1.5 text-vigreen-800"></i> Relato 100% Anônimo</div>
+                                    <div class="text-slate-500 leading-relaxed">Sua identidade não é coletada nem rastreada. Você receberá um protocolo único.</div>
+                                </div>
+                            </label>
+                            <label class="border-2 border-slate-200 bg-slate-50 p-4 rounded-2xl flex items-start gap-3.5 cursor-pointer hover:bg-slate-100 transition has-[:checked]:border-vigreen-800 has-[:checked]:bg-vigreen-50/40">
+                                <input type="radio" name="tipo_anonimato" value="identificado" onchange="toggleIdentificacaoFields(true)" class="mt-1 text-vigreen-800 focus:ring-vigreen-700">
+                                <div class="text-xs">
+                                    <div class="font-bold text-slate-900 text-sm mb-0.5"><i class="fa-solid fa-user-check mr-1.5 text-vigold-500"></i> Relato Identificado</div>
+                                    <div class="text-slate-500 leading-relaxed">Seus dados pessoais permanecem protegidos sob sigilo da equipe de compliance.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionais de Identificação -->
+                    <div id="fields-identificacao" class="hidden p-5 bg-vigold-50/60 border border-vigold-200 rounded-2xl space-y-4">
+                        <div class="flex items-center gap-2 text-vigold-800 text-xs font-bold">
+                            <i class="fa-solid fa-lock text-vigold-500"></i> Seus dados estão resguardados sob os normativos de Proteção de Dados e Sigilo Ético.
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="denunciante-nome" class="block text-xs font-semibold text-slate-700 mb-1">Nome Completo</label>
+                                <input type="text" id="denunciante-nome" placeholder="Seu nome" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            </div>
+                            <div>
+                                <label for="denunciante-email" class="block text-xs font-semibold text-slate-700 mb-1">E-mail para Acompanhamento</label>
+                                <input type="email" id="denunciante-email" placeholder="seu.email@exemplo.com" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            </div>
+                            <div>
+                                <label for="denunciante-telefone" class="block text-xs font-semibold text-slate-700 mb-1">Telefone / WhatsApp</label>
+                                <input type="tel" id="denunciante-telefone" placeholder="(00) 00000-0000" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categoria e Gravidade -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="categoria-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                                Categoria da Ocorrência <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="categoria-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                                <option value="" disabled selected>Selecione a categoria...</option>
+                                <option value="Assédio Moral / Sexual">Assédio Moral ou Sexual</option>
+                                <option value="Fraude / Corrupção">Fraude, Suborno ou Corrupção</option>
+                                <option value="Discriminação">Discriminação / Diversidade</option>
+                                <option value="Vazamento de Dados">Segurança da Informação / LGPD</option>
+                                <option value="Segurança no Trabalho">Saúde e Segurança do Trabalho</option>
+                                <option value="Desvio de Conduta">Descumprimento do Código de Ética</option>
+                                <option value="Outros">Outros Assuntos</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="gravidade-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                                Gravidade Estimada <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="gravidade-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                                <option value="Baixa">Baixa (Ajuste ético pontual)</option>
+                                <option value="Média" selected>Média (Impacto em equipes ou setores)</option>
+                                <option value="Alta">Alta (Risco financeiro ou assédio severo)</option>
+                                <option value="Crítica">Crítica (Ilegalidade grave / Risco à integridade)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Relato -->
+                    <div>
+                        <label for="relato-texto" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            Descrição Detalhada dos Fatos <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea id="relato-texto" rows="5" required placeholder="Descreva os detalhes do ocorrido (Quem, Quando, Onde e Como)..." class="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none resize-y"></textarea>
+                    </div>
+
+                    <!-- Anexo de Evidências -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            Anexar Documentos ou Evidências (Opcional)
+                        </label>
+                        <div class="border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-100 transition">
+                            <input type="file" id="arquivo-anexo" multiple class="hidden" onchange="handleFileSelect(event)">
+                            <label for="arquivo-anexo" class="cursor-pointer block">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-vigreen-800 mb-2"></i>
+                                <p class="text-xs text-slate-800 font-bold">Clique aqui para enviar arquivos, prints ou comprovantes</p>
+                                <p class="text-[11px] text-slate-400 mt-1">Formatos aceitos: PNG, JPG, PDF (Máx. 10MB)</p>
+                            </label>
+                        </div>
+                        <div id="lista-arquivos" class="mt-3 space-y-2"></div>
+                    </div>
+
+                    <!-- Botão Submit -->
+                    <div class="pt-4 flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto bg-gradient-to-r from-vigreen-800 to-vigreen-700 hover:from-vigreen-900 hover:to-vigreen-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-vigreen-900/20 transition flex items-center justify-center gap-2.5 text-sm">
+                            <i class="fa-solid fa-paper-plane text-vigold-500"></i> Enviar Manifestação e Gerar Protocolo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- ABA 2: CONSULTAR STATUS (PÚBLICO E SEGURO) -->
+        <!-- ========================================== -->
+        <section id="view-consultar" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-3xl mx-auto">
+                
+                <div class="text-center max-w-lg mx-auto mb-8">
+                    <div class="w-14 h-14 bg-vigold-50 text-vigold-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl border border-vigold-200">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-vigreen-900 font-display">Acompanhar Andamento</h2>
+                    <p class="text-slate-600 text-sm mt-1">Digite o número do protocolo fornecido no ato do registro para consultar a fase da apuração.</p>
+                </div>
+
+                <form onsubmit="handleSearchProtocol(event)" class="flex flex-col sm:flex-row gap-3 mb-8">
+                    <div class="relative flex-1">
+                        <input type="text" id="input-protocolo-busca" placeholder="Ex: DEN-2026-98124" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 pl-11 text-sm font-mono tracking-wider text-slate-800 uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-barcode text-vigreen-800"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-7 py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-magnifying-glass text-vigold-500"></i> Consultar
+                    </button>
+                </form>
+
+                <!-- RESULTADO DA CONSULTA DE PROTOCOLO -->
+                <div id="resultado-protocolo" class="hidden border-t border-slate-100 pt-6">
+                    <!-- Preenchido via JS de forma padronizada sem expor sigilos -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- ABA 3: PAINEL ADMINISTRATIVO (VOZÍNTEGRA GESTÃO) -->
+        <!-- ========================================== -->
+        <section id="view-admin" class="hidden space-y-6">
+
+            <!-- Banner Gestor & Ações de Empresas -->
+            <div class="bg-vigreen-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-vigreen-800">
+                <div>
+                    <div class="flex items-center gap-2 text-vigold-500 text-xs font-bold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-shield-halved"></i> Painel de Ouvidoria & Compliance
+                    </div>
+                    <h2 class="text-2xl font-extrabold font-display">Gestão Centralizada de Ocorrências</h2>
+                    <p class="text-slate-300 text-xs mt-1">Controle de clientes, ativação de contratos e emissão de QR Codes.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="openCompanyManagerModal()" class="bg-vigold-500 hover:bg-vigold-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-building-circle-check"></i> Gerenciar Empresas & QR Codes
+                    </button>
+                    <button onclick="exportDataToCSV()" class="bg-vigreen-800 hover:bg-vigreen-700 text-white border border-vigreen-700 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Exportar CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs Globais -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
+                        <span>Total de Ocorrências</span>
+                        <i class="fa-solid fa-folder-open text-slate-400"></i>
+                    </div>
+                    <div id="kpi-total" class="text-2xl font-extrabold text-slate-900 font-display">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-vigold-700 text-xs font-semibold mb-1">
+                        <span>Novas / Pendentes</span>
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div id="kpi-pendentes" class="text-2xl font-extrabold text-vigold-600 font-display">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-blue-600 text-xs font-semibold mb-1">
+                        <span>Em Apuração</span>
+                        <i class="fa-solid fa-spinner"></i>
+                    </div>
+                    <div id="kpi-investigacao" class="text-2xl font-extrabold text-blue-600 font-display">0</div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-vigreen-800 text-xs font-semibold mb-1">
+                        <span>Concluídas</span>
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div id="kpi-concluidas" class="text-2xl font-extrabold text-vigreen-800 font-display">0</div>
+                </div>
+            </div>
+
+            <!-- Filtros Globais -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3 flex-1">
+                    
+                    <!-- Filtro por Empresa -->
+                    <div class="w-full sm:w-52">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Filtrar Empresa</label>
+                        <select id="filter-admin-empresa" onchange="renderAdminTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            <option value="TODAS">Todas as Empresas</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Status -->
+                    <div class="w-full sm:w-44">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Status</label>
+                        <select id="filter-admin-status" onchange="renderAdminTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            <option value="TODOS">Todos os Status</option>
+                            <option value="Nova">Nova / Recebida</option>
+                            <option value="Em Apuração">Em Apuração</option>
+                            <option value="Concluída">Concluída</option>
+                            <option value="Arquivada">Arquivada</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro Categoria -->
+                    <div class="w-full sm:w-48">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Categoria</label>
+                        <select id="filter-admin-categoria" onchange="renderAdminTable()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none">
+                            <option value="TODAS">Todas as Categorias</option>
+                            <option value="Assédio Moral / Sexual">Assédio Moral / Sexual</option>
+                            <option value="Fraude / Corrupção">Fraude / Corrupção</option>
+                            <option value="Discriminação">Discriminação</option>
+                            <option value="Vazamento de Dados">Vazamento de Dados</option>
+                            <option value="Segurança no Trabalho">Segurança no Trabalho</option>
+                            <option value="Desvio de Conduta">Desvio de Conduta</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pesquisa por Protocolo -->
+                <div class="relative w-full md:w-64 pt-2 md:pt-0">
+                    <input type="text" id="filter-admin-search" onkeyup="renderAdminTable()" placeholder="Buscar por protocolo..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Ocorrências -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-4">Protocolo</th>
+                                <th class="p-4">Empresa Cliente</th>
+                                <th class="p-4">Categoria / Tipo</th>
+                                <th class="p-4">Gravidade</th>
+                                <th class="p-4">Data Registro</th>
+                                <th class="p-4">Status Atual</th>
+                                <th class="p-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100 font-medium">
+                            <!-- JS preenche -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODAIS E COMPONENTES AUXILIARES            -->
+    <!-- ========================================== -->
+
+    <!-- MODAL PROTOCOLO GERADO -->
+    <div id="modal-protocolo-sucesso" class="fixed inset-0 bg-vigreen-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center shadow-2xl space-y-5 border border-slate-100">
+            <div class="w-16 h-16 bg-vigreen-50 text-vigreen-800 rounded-2xl flex items-center justify-center mx-auto text-3xl border border-vigreen-200">
+                <i class="fa-solid fa-circle-check text-vigreen-800"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-extrabold text-vigreen-900 font-display">Manifestação Registrada!</h3>
+                <p class="text-xs text-slate-600 mt-1">Guarde o número do seu protocolo em um local seguro para acompanhar a resolução.</p>
+            </div>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 my-2">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Seu Código de Protocolo:</div>
+                <div id="display-protocolo-gerado" class="text-2xl font-mono font-bold text-vigreen-800 tracking-wider">DEN-00000</div>
+                <button onclick="copiarProtocolo()" class="mt-2 text-xs font-bold text-vigold-600 hover:text-vigold-700 flex items-center justify-center gap-1.5 mx-auto">
+                    <i class="fa-solid fa-copy"></i> Copiar Código
+                </button>
+            </div>
+
+            <p class="text-[11px] text-slate-600 bg-vigold-50 p-3 rounded-xl border border-vigold-200 text-left">
+                <i class="fa-solid fa-shield-halved text-vigold-600 mr-1"></i> Por questões de segurança e proteção à privacidade, o protocolo é seu único meio de acesso à consulta.
+            </p>
+
+            <button onclick="fecharModalProtocolo()" class="w-full bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-md">
+                Compreendido
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL TRATAMENTO DA DENÚNCIA (ADMIN) -->
+    <div id="modal-admin-detalhes" class="fixed inset-0 bg-vigreen-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                    <span id="modal-empresa-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-vigreen-50 text-vigreen-800 border border-vigreen-200">Empresa</span>
+                    <h3 class="text-xl font-bold text-slate-900 font-display mt-1">Tratamento do Protocolo <span id="modal-protocolo-id" class="font-mono text-vigold-600">DEN-000</span></h3>
+                </div>
+                <button onclick="fecharModalDetalhes()" class="text-slate-400 hover:text-slate-600 p-2 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div>
+                    <span class="text-slate-500 block">Tipo de Identificação:</span>
+                    <strong id="modal-tipo-identificacao" class="text-slate-800">Anônima</strong>
+                </div>
+                <div id="container-dados-denunciante" class="hidden">
+                    <span class="text-slate-500 block">Dados do Denunciante:</span>
+                    <strong id="modal-dados-denunciante" class="text-slate-800">-</strong>
+                </div>
+                <div>
+                    <span class="text-slate-500 block">Categoria:</span>
+                    <strong id="modal-categoria" class="text-slate-800">-</strong>
+                </div>
+                <div>
+                    <span class="text-slate-500 block">Gravidade:</span>
+                    <strong id="modal-gravidade" class="text-slate-800">-</strong>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Relato Registrado:</h4>
+                <div id="modal-descricao-relato" class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-800 leading-relaxed whitespace-pre-line"></div>
+            </div>
+
+            <!-- Atualizar Status -->
+            <div class="border-t border-slate-100 pt-5 space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Atualizar Fase da Investigação</h4>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Novo Status da Ocorrência</label>
+                        <select id="modal-novo-status" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none font-bold">
+                            <option value="Nova">Nova / Recebida</option>
+                            <option value="Em Apuração">Em Apuração</option>
+                            <option value="Concluída">Concluída</option>
+                            <option value="Arquivada">Arquivada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2.5 pt-2">
+                    <button onclick="fecharModalDetalhes()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancelar</button>
+                    <button onclick="salvarAtualizacaoStatus()" class="px-6 py-2.5 bg-vigreen-800 hover:bg-vigreen-900 text-white rounded-xl text-xs font-bold shadow-md">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE GESTÃO DE EMPRESAS & GERADOR DE QR CODE -->
+    <div id="modal-gerenciar-empresas" class="fixed inset-0 bg-vigreen-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 my-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 font-display"><i class="fa-solid fa-building text-vigreen-800 mr-2"></i>Gestão de Clientes & Contratos</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Cadastre clientes, ative/desative contratos e emita QR Codes de acesso.</p>
+                </div>
+                <button onclick="fecharCompanyManagerModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Cadastro de Nova Empresa -->
+            <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700 block">Cadastrar Nova Empresa Cliente</span>
+                <div class="flex flex-col sm:flex-row gap-2.5">
+                    <input type="text" id="input-nova-empresa-nome" placeholder="Razão Social ou Nome Fantasia" class="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <button onclick="adicionarEmpresa()" class="bg-vigreen-800 hover:bg-vigreen-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-plus text-vigold-500"></i> Cadastrar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Empresas Cadastradas -->
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 block">Empresas Cadastradas no VozÍntegra</span>
+                <div id="lista-empresas-admin" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    <!-- JS preenche -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QR CODE E LINK EXCLUSIVO DA EMPRESA -->
+    <div id="modal-qrcode-view" class="fixed inset-0 bg-vigreen-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl space-y-5 border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 id="qr-modal-empresa-nome" class="font-bold text-slate-900 text-sm truncate font-display">Empresa</h4>
+                <button onclick="fecharModalQRCode()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-600">Este é o QR Code oficial para divulgação nos murais e materiais de compliance desta empresa.</p>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col items-center justify-center">
+                <img id="qr-code-image" src="" alt="QR Code de Acesso" class="w-48 h-48 rounded-xl shadow-sm border border-slate-200 bg-white p-2">
+                <p class="text-[10px] text-slate-400 mt-2 font-mono">vozintegra.com.br/c/<span id="qr-modal-slug">slug</span></p>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="copiarLinkExclusivo()" class="w-full bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md">
+                    <i class="fa-solid fa-link text-vigold-500"></i> Copiar Link Exclusivo da Empresa
+                </button>
+                <button onclick="fecharModalQRCode()" class="w-full border border-slate-300 text-slate-700 font-semibold py-2.5 rounded-xl text-xs hover:bg-slate-50">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA DO SISTEMA -->
+    <script>
+        // ESTADO GLOBAL DO SISTEMA VOZÍNTEGRA
+        let state = {
+            currentEmpresaSlug: 'acme-corporation',
+            
+            empresas: [
+                { id: '1', nome: 'Acme Corporation', slug: 'acme-corporation', status: 'Ativa' },
+                { id: '2', nome: 'TechServices Brasil', slug: 'techservices-brasil', status: 'Ativa' },
+                { id: '3', nome: 'Logística Inovadora', slug: 'logistica-inovadora', status: 'Inativa' }
+            ],
+
+            denuncias: [
+                {
+                    protocolo: 'DEN-2026-98124',
+                    empresaSlug: 'acme-corporation',
+                    empresaNome: 'Acme Corporation',
+                    tipoIdentificacao: 'anonimo',
+                    denunciante: null,
+                    categoria: 'Assédio Moral / Sexual',
+                    gravidade: 'Alta',
+                    relato: 'Presenciei comportamentos hostis sistemáticos do gestor da área comercial durante o fechamento de metas.',
+                    status: 'Em Apuração',
+                    dataRegistro: '2026-08-20 14:32'
+                },
+                {
+                    protocolo: 'DEN-2026-44102',
+                    empresaSlug: 'techservices-brasil',
+                    empresaNome: 'TechServices Brasil',
+                    tipoIdentificacao: 'identificado',
+                    denunciante: { nome: 'Carlos Eduardo', email: 'carlos@email.com', telefone: '(11) 98888-7777' },
+                    categoria: 'Fraude / Corrupção',
+                    gravidade: 'Crítica',
+                    relato: 'Suspeita de falsificação de comprovantes de despesas corporativas no setor financeiro.',
+                    status: 'Nova',
+                    dataRegistro: '2026-08-24 10:05'
+                }
+            ],
+            selectedProtocoloAdmin: null,
+            selectedEmpresaQRCode: null
+        };
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            renderDemoCompanySelector();
+            updateCurrentCompanyView();
+            renderAdminTable();
+            updateKPIs();
+        };
+
+        // TROCA DE ABAS
+        function switchTab(tab) {
+            document.getElementById('view-denunciar').classList.add('hidden');
+            document.getElementById('view-consultar').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            document.getElementById('btn-tab-denunciar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all";
+            document.getElementById('btn-tab-consultar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all";
+            document.getElementById('btn-tab-admin').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all border-l border-vigreen-800 ml-1";
+
+            if(tab === 'denunciar') {
+                document.getElementById('view-denunciar').classList.remove('hidden');
+                document.getElementById('btn-tab-denunciar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-vigold-500 text-slate-950 shadow-md";
+            } else if(tab === 'consultar') {
+                document.getElementById('view-consultar').classList.remove('hidden');
+                document.getElementById('btn-tab-consultar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-vigold-500 text-slate-950 shadow-md";
+            } else if(tab === 'admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('btn-tab-admin').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-vigold-500 text-slate-950 shadow-md border-l border-vigreen-800 ml-1";
+                renderAdminTable();
+                updateKPIs();
+            }
+        }
+
+        // SIMULADOR DE SCAN DE QR CODE NA TOOLBAR
+        function renderDemoCompanySelector() {
+            const select = document.getElementById('demo-company-selector');
+            select.innerHTML = '';
+            state.empresas.forEach(emp => {
+                const isSel = emp.slug === state.currentEmpresaSlug ? 'selected' : '';
+                const tagStatus = emp.status === 'Inativa' ? ' (SUSPENSA/INATIVA)' : ' (Ativa)';
+                select.innerHTML += `<option value="${emp.slug}" ${isSel}>${emp.nome}${tagStatus}</option>`;
+            });
+
+            populateAdminCompanyFilter();
+        }
+
+        function simularAcessoEmpresa(slug) {
+            state.currentEmpresaSlug = slug;
+            updateCurrentCompanyView();
+        }
+
+        function updateCurrentCompanyView() {
+            const emp = state.empresas.find(e => e.slug === state.currentEmpresaSlug) || state.empresas[0];
+            const activeNameLabel = document.getElementById('active-company-name');
+            const formContainer = document.getElementById('container-formulario-ativo');
+            const inativaBanner = document.getElementById('banner-empresa-inativa');
+            const inativaNome = document.getElementById('inativa-nome-empresa');
+
+            if (emp.status === 'Inativa') {
+                formContainer.classList.add('hidden');
+                inativaBanner.classList.remove('hidden');
+                inativaNome.innerText = emp.nome;
+            } else {
+                inativaBanner.classList.add('hidden');
+                formContainer.classList.remove('hidden');
+                activeNameLabel.innerText = emp.nome;
+            }
+        }
+
+        function toggleIdentificacaoFields(isIdentified) {
+            const fields = document.getElementById('fields-identificacao');
+            if(isIdentified) fields.classList.remove('hidden');
+            else fields.classList.add('hidden');
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const container = document.getElementById('lista-arquivos');
+            container.innerHTML = '';
+            for(let file of files) {
+                container.innerHTML += `
+                    <div class="text-xs text-slate-700 flex items-center justify-between bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                        <span class="truncate font-medium"><i class="fa-solid fa-paperclip text-vigreen-800 mr-2"></i>${file.name}</span>
+                        <span class="text-[10px] text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
+                    </div>
+                `;
+            }
+        }
+
+        // SUBMETER NOVA DENÚNCIA
+        function handleReportSubmit(event) {
+            event.preventDefault();
+
+            const currentCompany = state.empresas.find(e => e.slug === state.currentEmpresaSlug);
+            if (!currentCompany || currentCompany.status === 'Inativa') {
+                showToast("Erro: Canal indisponível para esta empresa.", "rose");
+                return;
+            }
+
+            const tipoAnonimato = document.querySelector('input[name="tipo_anonimato"]:checked').value;
+            const categoria = document.getElementById('categoria-select').value;
+            const gravidade = document.getElementById('gravidade-select').value;
+            const relato = document.getElementById('relato-texto').value;
+
+            let denunciante = null;
+            if(tipoAnonimato === 'identificado') {
+                denunciante = {
+                    nome: document.getElementById('denunciante-nome').value || 'Não informado',
+                    email: document.getElementById('denunciante-email').value || 'Não informado',
+                    telefone: document.getElementById('denunciante-telefone').value || 'Não informado'
+                };
+            }
+
+            const randomCode = Math.floor(10000 + Math.random() * 90000);
+            const anoAtual = new Date().getFullYear();
+            const protocolo = `DEN-${anoAtual}-${randomCode}`;
+            const dataAtual = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+
+            const novaDenuncia = {
+                protocolo,
+                empresaSlug: currentCompany.slug,
+                empresaNome: currentCompany.nome,
+                tipoIdentificacao: tipoAnonimato,
+                denunciante,
+                categoria,
+                gravidade,
+                relato,
+                status: 'Nova',
+                dataRegistro: dataAtual
+            };
+
+            state.denuncias.unshift(novaDenuncia);
+
+            document.getElementById('display-protocolo-gerado').innerText = protocolo;
+            document.getElementById('modal-protocolo-sucesso').classList.remove('hidden');
+
+            document.getElementById('form-denuncia').reset();
+            toggleIdentificacaoFields(false);
+            document.getElementById('lista-arquivos').innerHTML = '';
+        }
+
+        function copiarProtocolo() {
+            const proto = document.getElementById('display-protocolo-gerado').innerText;
+            navigator.clipboard.writeText(proto).then(() => {
+                showToast("Protocolo copiado com sucesso!");
+            });
+        }
+
+        function fecharModalProtocolo() {
+            document.getElementById('modal-protocolo-sucesso').classList.add('hidden');
+        }
+
+        // CONSULTA DE PROTOCOLO (PADRONIZADA E SEM VAZAR SEGREDO)
+        function handleSearchProtocol(event) {
+            event.preventDefault();
+            const code = document.getElementById('input-protocolo-busca').value.trim().toUpperCase();
+            const container = document.getElementById('resultado-protocolo');
+
+            const item = state.denuncias.find(d => d.protocolo.toUpperCase() === code);
+
+            if(!item) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
+                        <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
+                        <p class="font-bold text-sm">Protocolo não localizado.</p>
+                        <p class="text-xs text-slate-500 mt-1">Verifique o código e tente novamente (Ex: DEN-2026-98124).</p>
+                    </div>
+                `;
+                container.classList.remove('hidden');
+                return;
+            }
+
+            let stepIndex = 1;
+            if (item.status === 'Em Apuração') stepIndex = 2;
+            if (item.status === 'Concluída' || item.status === 'Arquivada') stepIndex = 3;
+
+            let badgeStatus = "bg-vigold-50 text-vigold-700 border-vigold-200";
+            if(item.status === 'Em Apuração') badgeStatus = "bg-blue-50 text-blue-700 border-blue-200";
+            if(item.status === 'Concluída') badgeStatus = "bg-vigreen-50 text-vigreen-800 border-vigreen-200";
+            if(item.status === 'Arquivada') badgeStatus = "bg-slate-100 text-slate-700 border-slate-300";
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                        <div>
+                            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Número do Protocolo</div>
+                            <h3 class="text-xl font-bold text-vigreen-900 font-mono">${item.protocolo}</h3>
+                            <span class="text-xs text-slate-500">Registrado em ${item.dataRegistro}</span>
+                        </div>
+                        <div>
+                            <span class="px-3.5 py-1 text-xs font-bold rounded-full border ${badgeStatus}">${item.status}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Stepper de Andamento Macro -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-bars-progress text-vigold-500"></i> Etapa Atual da Apuração
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-4 rounded-2xl border ${stepIndex >= 1 ? 'bg-vigreen-50 border-vigreen-300 text-vigreen-900' : 'bg-slate-50 border-slate-200 text-slate-400'}">
+                                <div class="flex items-center gap-2 font-bold text-xs mb-1">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${stepIndex >= 1 ? 'bg-vigreen-800 text-white' : 'bg-slate-300 text-slate-600'}">1</span>
+                                    <span>Recebido</span>
+                                </div>
+                                <p class="text-[11px] ${stepIndex >= 1 ? 'text-vigreen-800' : 'text-slate-400'}">Manifestação registrada com sucesso.</p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl border ${stepIndex >= 2 ? 'bg-vigreen-50 border-vigreen-300 text-vigreen-900' : 'bg-slate-50 border-slate-200 text-slate-400'}">
+                                <div class="flex items-center gap-2 font-bold text-xs mb-1">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${stepIndex >= 2 ? 'bg-vigreen-800 text-white' : 'bg-slate-300 text-slate-600'}">2</span>
+                                    <span>Em Apuração</span>
+                                </div>
+                                <p class="text-[11px] ${stepIndex >= 2 ? 'text-vigreen-800' : 'text-slate-400'}">Em análise pela comissão ética.</p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl border ${stepIndex >= 3 ? 'bg-vigreen-50 border-vigreen-300 text-vigreen-900' : 'bg-slate-50 border-slate-200 text-slate-400'}">
+                                <div class="flex items-center gap-2 font-bold text-xs mb-1">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${stepIndex >= 3 ? 'bg-vigreen-800 text-white' : 'bg-slate-300 text-slate-600'}">3</span>
+                                    <span>Concluído</span>
+                                </div>
+                                <p class="text-[11px] ${stepIndex >= 3 ? 'text-vigreen-800' : 'text-slate-400'}">Processo ético finalizado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+
+        // ADMIN TABELA
+        function populateAdminCompanyFilter() {
+            const filterAdmin = document.getElementById('filter-admin-empresa');
+            filterAdmin.innerHTML = '<option value="TODAS">Todas as Empresas</option>';
+            state.empresas.forEach(emp => {
+                filterAdmin.innerHTML += `<option value="${emp.slug}">${emp.nome}</option>`;
+            });
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            const filterEmpresaSlug = document.getElementById('filter-admin-empresa').value;
+            const filterStatus = document.getElementById('filter-admin-status').value;
+            const filterCategoria = document.getElementById('filter-admin-categoria').value;
+            const search = document.getElementById('filter-admin-search').value.toLowerCase();
+
+            let filtered = state.denuncias.filter(d => {
+                if(filterEmpresaSlug !== 'TODAS' && d.empresaSlug !== filterEmpresaSlug) return false;
+                if(filterStatus !== 'TODOS' && d.status !== filterStatus) return false;
+                if(filterCategoria !== 'TODAS' && d.categoria !== filterCategoria) return false;
+                if(search && !d.protocolo.toLowerCase().includes(search) && !d.relato.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-slate-400">
+                            Nenhuma ocorrência localizada com os filtros aplicados.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(d => {
+                let statusBadge = "bg-vigold-50 text-vigold-700 border-vigold-200";
+                if(d.status === 'Em Apuração') statusBadge = "bg-blue-50 text-blue-700 border-blue-200";
+                if(d.status === 'Concluída') statusBadge = "bg-vigreen-50 text-vigreen-800 border-vigreen-200";
+                if(d.status === 'Arquivada') statusBadge = "bg-slate-100 text-slate-700 border-slate-200";
+
+                let gravidadeBadge = "text-slate-600";
+                if(d.gravidade === 'Alta') gravidadeBadge = "text-vigold-700 font-bold";
+                if(d.gravidade === 'Crítica') gravidadeBadge = "text-rose-600 font-bold";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-mono font-bold text-slate-900">${d.protocolo}</td>
+                        <td class="p-4">
+                            <span class="font-semibold text-slate-800">${d.empresaNome}</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-medium text-slate-800">${d.categoria}</div>
+                            <span class="text-[10px] ${d.tipoIdentificacao === 'anonimo' ? 'text-slate-400' : 'text-vigreen-800 font-bold'}">
+                                ${d.tipoIdentificacao === 'anonimo' ? '<i class="fa-solid fa-user-ninja"></i> Anônima' : '<i class="fa-solid fa-user-check text-vigold-500"></i> Identificada'}
+                            </span>
+                        </td>
+                        <td class="p-4 ${gravidadeBadge}">${d.gravidade}</td>
+                        <td class="p-4 text-slate-500">${d.dataRegistro}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full border ${statusBadge}">${d.status}</span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <button onclick="abrirModalDetalhes('${d.protocolo}')" class="bg-vigreen-800 hover:bg-vigreen-900 text-white px-3.5 py-1.5 rounded-lg text-[11px] font-bold transition shadow-sm">
+                                Tratar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateKPIs() {
+            document.getElementById('kpi-total').innerText = state.denuncias.length;
+            document.getElementById('kpi-pendentes').innerText = state.denuncias.filter(d => d.status === 'Nova').length;
+            document.getElementById('kpi-investigacao').innerText = state.denuncias.filter(d => d.status === 'Em Apuração').length;
+            document.getElementById('kpi-concluidas').innerText = state.denuncias.filter(d => d.status === 'Concluída').length;
+        }
+
+        function abrirModalDetalhes(protocolo) {
+            const item = state.denuncias.find(d => d.protocolo === protocolo);
+            if(!item) return;
+
+            state.selectedProtocoloAdmin = protocolo;
+
+            document.getElementById('modal-empresa-badge').innerText = item.empresaNome;
+            document.getElementById('modal-protocolo-id').innerText = item.protocolo;
+            document.getElementById('modal-categoria').innerText = item.categoria;
+            document.getElementById('modal-gravidade').innerText = item.gravidade;
+            document.getElementById('modal-descricao-relato').innerText = item.relato;
+            document.getElementById('modal-novo-status').value = item.status;
+
+            const containerDados = document.getElementById('container-dados-denunciante');
+            if(item.tipoIdentificacao === 'identificado' && item.denunciante) {
+                document.getElementById('modal-tipo-identificacao').innerText = 'Identificada';
+                document.getElementById('modal-dados-denunciante').innerText = `${item.denunciante.nome} | ${item.denunciante.email} | ${item.denunciante.telefone}`;
+                containerDados.classList.remove('hidden');
+            } else {
+                document.getElementById('modal-tipo-identificacao').innerText = 'Anônima';
+                containerDados.classList.add('hidden');
+            }
+
+            document.getElementById('modal-admin-detalhes').classList.remove('hidden');
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modal-admin-detalhes').classList.add('hidden');
+        }
+
+        function salvarAtualizacaoStatus() {
+            const item = state.denuncias.find(d => d.protocolo === state.selectedProtocoloAdmin);
+            if(!item) return;
+
+            const novoStatus = document.getElementById('modal-novo-status').value;
+            item.status = novoStatus;
+
+            renderAdminTable();
+            updateKPIs();
+            fecharModalDetalhes();
+            showToast("Status da ocorrência atualizado!");
+        }
+
+        // MODAL GESTÃO DE EMPRESAS
+        function openCompanyManagerModal() {
+            renderEmpresasAdminList();
+            document.getElementById('modal-gerenciar-empresas').classList.remove('hidden');
+        }
+
+        function fecharCompanyManagerModal() {
+            document.getElementById('modal-gerenciar-empresas').classList.add('hidden');
+        }
+
+        function renderEmpresasAdminList() {
+            const container = document.getElementById('lista-empresas-admin');
+            container.innerHTML = state.empresas.map(emp => {
+                const isAtiva = emp.status === 'Ativa';
+                return `
+                    <div class="p-3.5 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs gap-3 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl ${isAtiva ? 'bg-vigreen-50 text-vigreen-800' : 'bg-rose-50 text-rose-700'} flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800">${emp.nome}</div>
+                                <div class="text-[10px] text-slate-400 font-mono">slug: ${emp.slug}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <!-- Toggle Status Ativa / Inativa -->
+                            <button onclick="toggleEmpresaStatus('${emp.id}')" class="px-3 py-1.5 rounded-xl font-bold text-[11px] border transition ${isAtiva ? 'bg-vigreen-50 text-vigreen-800 border-vigreen-200 hover:bg-vigreen-100' : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'}">
+                                ${isAtiva ? '<i class="fa-solid fa-check mr-1"></i> Ativa' : '<i class="fa-solid fa-ban mr-1"></i> Inativa (Pagamento)'}
+                            </button>
+
+                            <!-- Gerar QR Code -->
+                            <button onclick="gerarQRCodeEmpresa('${emp.slug}')" class="bg-vigreen-800 hover:bg-vigreen-900 text-white px-3 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-qrcode text-vigold-500"></i> QR Code / Link
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleEmpresaStatus(id) {
+            const emp = state.empresas.find(e => e.id === id);
+            if(emp) {
+                emp.status = emp.status === 'Ativa' ? 'Inativa' : 'Ativa';
+                renderEmpresasAdminList();
+                renderDemoCompanySelector();
+                updateCurrentCompanyView();
+                showToast(`Status de ${emp.nome} alterado para ${emp.status}!`);
+            }
+        }
+
+        function adicionarEmpresa() {
+            const input = document.getElementById('input-nova-empresa-nome');
+            const nome = input.value.trim();
+            if(!nome) return;
+
+            const slug = nome.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            const newCompany = {
+                id: Date.now().toString(),
+                nome,
+                slug,
+                status: 'Ativa'
+            };
+
+            state.empresas.push(newCompany);
+            input.value = '';
+            
+            renderEmpresasAdminList();
+            renderDemoCompanySelector();
+            showToast("Nova empresa cadastrada com sucesso!");
+        }
+
+        // VISUALIZADOR DE QR CODE E LINK DA EMPRESA
+        function gerarQRCodeEmpresa(slug) {
+            const emp = state.empresas.find(e => e.slug === slug);
+            if(!emp) return;
+
+            state.selectedEmpresaQRCode = emp;
+            document.getElementById('qr-modal-empresa-nome').innerText = emp.nome;
+            document.getElementById('qr-modal-slug').innerText = emp.slug;
+
+            const linkEmpresa = `https://vozintegra.com.br/c/${emp.slug}`;
+            const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(linkEmpresa)}&size=300&margin=1`;
+            
+            document.getElementById('qr-code-image').src = qrApiUrl;
+            document.getElementById('modal-qrcode-view').classList.remove('hidden');
+        }
+
+        function fecharModalQRCode() {
+            document.getElementById('modal-qrcode-view').classList.add('hidden');
+        }
+
+        function copiarLinkExclusivo() {
+            if(!state.selectedEmpresaQRCode) return;
+            const link = `https://vozintegra.com.br/c/${state.selectedEmpresaQRCode.slug}`;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast("Link exclusivo da empresa copiado!");
+            });
+        }
+
+        function exportDataToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Protocolo,Empresa,Categoria,Gravidade,Status,DataRegistro\n";
+            state.denuncias.forEach(d => {
+                csvContent += `${d.protocolo},"${d.empresaNome}","${d.categoria}",${d.gravidade},${d.status},${d.dataRegistro}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `VozIntegra_Relatorio_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showToast(mensagem, color = 'emerald') {
+            const toast = document.createElement('div');
+            const bgClass = color === 'rose' ? 'bg-rose-900 border-rose-700' : 'bg-vigreen-900 border-vigreen-700';
+            const iconClass = color === 'rose' ? 'fa-circle-xmark text-rose-400' : 'fa-circle-check text-vigold-500';
+
+            toast.className = `fixed bottom-5 right-5 ${bgClass} text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold z-50 flex items-center gap-2 border`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mensagem}`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+    </script>
+</body>
+</html>
