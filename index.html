@@ -1,6 +1,51 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full bg-[#f8f9f8]">
 <head>
+    1. Biblioteca Oficial do Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ 
+<script>
+  // 2. Configuração da ligação à base de dados do VozÍntegra
+  const SUPABASE_URL = 'https://vbgrkpfozgitikgiklin.supabase.co';
+  // Substitua o texto entre aspas abaixo pela chave que copiou do ícone 📄 de "Publishable key":
+  const SUPABASE_KEY = 'cole_aqui_a_sua_publishable_key';
+ 
+  // Inicialização do cliente Supabase
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+ 
+  // -------------------------------------------------------------
+  // FUNÇÕES DE INTEGRAÇÃO COM O BANCO DE DADOS
+  // -------------------------------------------------------------
+ 
+  // Função para enviar uma nova denúncia
+  async function enviarDenunciaParaSupabase(dadosDenuncia) {
+    const { data, error } = await supabaseClient
+      .from('denuncias')
+      .insert([dadosDenuncia])
+      .select();
+ 
+    if (error) {
+      console.error('Erro ao guardar denúncia:', error.message);
+      return { sucesso: false, erro: error.message };
+    }
+    return { sucesso: true, dados: data };
+  }
+ 
+  // Função para consultar o estado pelo número de protocolo
+  async function consultarProtocoloNoSupabase(protocoloDigito) {
+    const { data, error } = await supabaseClient
+      .from('denuncias')
+      .select('*, andamentos(*)')
+      .eq('protocolo', protocoloDigito)
+      .single();
+ 
+    if (error) {
+      console.error('Protocolo não encontrado:', error.message);
+      return null;
+    }
+    return data;
+  }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VozÍntegra - Gestão Integrada de Denúncias e Compliance</title>
