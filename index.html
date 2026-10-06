@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VozÍntegra - Gestão Integrada de Denúncias e Compliance</title>
+
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Tailwind CSS via CDN with fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
@@ -42,16 +51,20 @@
             }
         }
     </script>
+
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         .brand-gradient-text {
             background: linear-gradient(135deg, #1C4428 0%, #2f7445 50%, #D98B1D 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
+        /* FALLBACK STYLES */
         html { height: 100%; background-color: #f8f9f8; }
         body { height: 100%; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; }
         header { background: linear-gradient(135deg, #122c1b 0%, #1C4428 100%); color: white; padding: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 30; }
@@ -80,16 +93,42 @@
         .text-slate-800 { color: #1e293b; }
         .text-slate-600 { color: #475569; }
         .text-white { color: white; }
-        input[type="file"] { padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 0.75rem; }
-        .file-preview { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background-color: #f1f5f9; border-radius: 0.5rem; font-size: 0.85rem; margin-top: 0.25rem; }
-        .file-preview-remove { cursor: pointer; color: #d32f2f; font-weight: bold; margin-left: auto; }
+
+        /* FILE INPUT STYLING */
+        input[type="file"] {
+            padding: 0.5rem;
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.75rem;
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f1f5f9;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .file-preview-remove {
+            cursor: pointer;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-left: auto;
+        }
     </style>
 </head>
 <body class="h-full text-slate-800 font-sans flex flex-col bg-[#f8f9f8]">
+
+    <!-- INICIALIZAÇÃO DO SUPABASE -->
     <script>
         const SUPABASE_URL = 'https://vbgrkpfozgitikgiklin.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_lPOC3pQ13sTb8D7fcy0eGw_eOYWXzw0';
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let state = {
             currentEmpresaSlug: 'acme-corporation',
             empresas: [],
@@ -98,15 +137,32 @@
             selectedEmpresaQRCode: null,
             attachedFiles: []
         };
+
+        // CARREGAR EMPRESAS DO SUPABASE
         async function carregarEmpresas() {
             try {
                 console.log('Iniciando carregamento de empresas...');
-                const { data, error } = await supabaseClient.from('empresas').select('*').limit(100);
+                const { data, error } = await supabaseClient
+                    .from('empresas')
+                    .select('*')
+                    .limit(100);
+
                 console.log('Resposta Supabase:', { data, error });
-                if (error) { console.error('Erro na query:', error); throw error; }
+
+                if (error) {
+                    console.error('Erro na query:', error);
+                    throw error;
+                }
+
                 state.empresas = data || [];
                 console.log('Empresas carregadas:', state.empresas);
-                if (state.empresas.length > 0) { state.currentEmpresaSlug = state.empresas[0].slug; } else { console.warn('Nenhuma empresa encontrada'); }
+
+                if (state.empresas.length > 0) {
+                    state.currentEmpresaSlug = state.empresas[0].slug;
+                } else {
+                    console.warn('Nenhuma empresa encontrada');
+                }
+
                 renderDemoCompanySelector();
                 renderEmpresasSelect();
                 updateCurrentCompanyView();
@@ -115,10 +171,17 @@
                 showToast('Erro ao carregar empresas. Verifique Supabase.', 'rose');
             }
         }
+
+        // CARREGAR DENÚNCIAS (para admin)
         async function carregarDenuncias() {
             try {
-                const { data, error } = await supabaseClient.from('denuncias').select('*').order('created_at', { ascending: false });
+                const { data, error } = await supabaseClient
+                    .from('denuncias')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
                 if (error) throw error;
+
                 state.denuncias = data || [];
                 renderAdminTable();
                 updateKPIs();
@@ -126,8 +189,14 @@
                 console.error('Erro ao carregar denúncias:', error);
             }
         }
-        window.addEventListener('load', () => { carregarEmpresas(); });
+
+        // INICIALIZAR
+        window.addEventListener('load', () => {
+            carregarEmpresas();
+        });
     </script>
+
+    <!-- NAVBAR -->
     <header class="bg-vigreen-900 text-white shadow-xl sticky top-0 z-30 border-b border-vigreen-800/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
@@ -148,6 +217,7 @@
                         </div>
                     </div>
                 </div>
+
                 <nav class="flex items-center gap-1.5 bg-vigreen-950/70 p-1.5 rounded-2xl border border-vigreen-800/80">
                     <button id="btn-tab-denunciar" onclick="switchTab('denunciar')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-vigold-500 text-slate-950 shadow-md">
                         <i class="fa-solid fa-paper-plane mr-1.5"></i><span class="hidden sm:inline">Nova</span> Manifestação
@@ -162,7 +232,10 @@
             </div>
         </div>
     </header>
+
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ====== ABA 1: FORMULÁRIO DE DENÚNCIA ====== -->
         <section id="view-denunciar" class="space-y-6">
             <div id="banner-empresa-inativa" class="hidden max-w-3xl mx-auto bg-white border-2 border-rose-200 rounded-3xl p-8 text-center space-y-4 shadow-xl">
                 <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-rose-100 shadow-inner">
@@ -171,6 +244,7 @@
                 <h3 class="text-xl font-bold text-slate-900 font-display">Canal Temporariamente Indisponível</h3>
                 <p class="text-sm text-slate-600">O canal encontra-se temporariamente suspenso para manutenção.</p>
             </div>
+
             <div id="container-formulario-ativo" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-4xl mx-auto">
                 <div class="border-b border-slate-100 pb-6 mb-8">
                     <div class="flex items-center gap-2 mb-2">
@@ -181,13 +255,18 @@
                     <h2 class="text-2xl sm:text-3xl font-extrabold text-vigreen-900 font-display">Registrar Manifestação / Denúncia</h2>
                     <p class="text-slate-600 text-sm mt-1">Este canal é operado com isenção e total sigilo.</p>
                 </div>
+
                 <form id="form-denuncia" onsubmit="handleReportSubmit(event)" class="space-y-6">
+
+                    <!-- SELEÇÃO DA EMPRESA -->
                     <div>
                         <label for="empresa-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Empresa <span class="text-rose-500">*</span></label>
                         <select id="empresa-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
                             <option value="">Selecione sua empresa...</option>
                         </select>
                     </div>
+
+                    <!-- TIPO DE IDENTIFICAÇÃO -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">Opção de Identificação <span class="text-rose-500">*</span></label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -207,6 +286,8 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- CAMPOS DE IDENTIFICAÇÃO -->
                     <div id="fields-identificacao" class="hidden p-5 bg-vigold-50/60 border border-vigold-200 rounded-2xl space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
@@ -223,6 +304,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- CATEGORIA E GRAVIDADE -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label for="categoria-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Categoria <span class="text-rose-500">*</span></label>
@@ -237,6 +320,7 @@
                                 <option value="Outros">Outros</option>
                             </select>
                         </div>
+
                         <div>
                             <label for="gravidade-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Gravidade <span class="text-rose-500">*</span></label>
                             <select id="gravidade-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
@@ -247,16 +331,22 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- DESCRIÇÃO -->
                     <div>
                         <label for="relato-texto" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Descrição Detalhada <span class="text-rose-500">*</span></label>
                         <textarea id="relato-texto" rows="5" required placeholder="Descreva os detalhes..." class="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none resize-y"></textarea>
                     </div>
+
+                    <!-- ANEXAR PROVAS -->
                     <div>
                         <label for="arquivo-provas" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Anexar Provas (Imagens, PDFs, etc)</label>
                         <input type="file" id="arquivo-provas" multiple accept="image/*,.pdf,.doc,.docx" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm" onchange="handleFileSelect(event)">
                         <p class="text-xs text-slate-500 mt-1">Você pode anexar prints, PDFs, documentos e imagens como comprovação.</p>
                         <div id="arquivos-lista" class="mt-3 space-y-2"></div>
                     </div>
+
+                    <!-- BOTÃO ENVIAR -->
                     <div class="pt-4 flex justify-end">
                         <button type="submit" class="w-full sm:w-auto bg-gradient-to-r from-vigreen-800 to-vigreen-700 hover:from-vigreen-900 hover:to-vigreen-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2.5 text-sm">
                             <i class="fa-solid fa-paper-plane text-vigold-500"></i> Enviar Manifestação
@@ -265,21 +355,27 @@
                 </form>
             </div>
         </section>
+
+        <!-- ====== ABA 2: CONSULTAR STATUS ====== -->
         <section id="view-consultar" class="hidden space-y-6">
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-3xl mx-auto">
                 <div class="text-center max-w-lg mx-auto mb-8">
                     <h2 class="text-2xl font-extrabold text-vigreen-900 font-display">Acompanhar Andamento</h2>
                     <p class="text-slate-600 text-sm mt-1">Digite seu protocolo para consultar o status.</p>
                 </div>
+
                 <form onsubmit="handleSearchProtocol(event)" class="flex flex-col sm:flex-row gap-3 mb-8">
                     <input type="text" id="input-protocolo-busca" placeholder="Ex: DEN-2026-98124" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
                     <button type="submit" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-7 py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-md">
                         <i class="fa-solid fa-magnifying-glass text-vigold-500"></i> Consultar
                     </button>
                 </form>
+
                 <div id="resultado-protocolo" class="hidden border-t border-slate-100 pt-6"></div>
             </div>
         </section>
+
+        <!-- ====== ABA 3: ADMIN ====== -->
         <section id="view-admin" class="hidden space-y-6">
             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
@@ -294,12 +390,17 @@
                                 <th class="p-4">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100">
+                            <!-- Preenchido via JS -->
+                        </tbody>
                     </table>
                 </div>
             </div>
         </section>
+
     </main>
+
+    <!-- ====== MODAL: PROTOCOLO GERADO ====== -->
     <div id="modal-protocolo-sucesso" class="fixed inset-0 bg-vigreen-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 text-center shadow-2xl space-y-5 border border-slate-100">
             <div class="w-16 h-16 bg-vigreen-50 text-vigreen-800 rounded-2xl flex items-center justify-center mx-auto text-3xl border border-vigreen-200">
@@ -309,6 +410,8 @@
                 <h3 class="text-2xl font-extrabold text-vigreen-900 font-display">Manifestação Registrada!</h3>
                 <p class="text-xs text-slate-600 mt-2">Guarde AMBOS os códigos em um local seguro para consultar depois.</p>
             </div>
+
+            <!-- PROTOCOLO -->
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Código de Protocolo:</div>
                 <div id="display-protocolo-gerado" class="text-xl font-mono font-bold text-vigreen-800 tracking-wider mb-2">DEN-00000</div>
@@ -316,6 +419,8 @@
                     <i class="fa-solid fa-copy"></i> Copiar Protocolo
                 </button>
             </div>
+
+            <!-- CÓDIGO DE CONSULTA -->
             <div class="bg-vigold-50 p-4 rounded-2xl border border-vigold-200">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-vigold-700 mb-1">Código de Consulta:</div>
                 <div id="display-codigo-consulta" class="text-xl font-mono font-bold text-vigold-600 tracking-widest mb-2">ABC12345</div>
@@ -323,36 +428,51 @@
                     <i class="fa-solid fa-copy"></i> Copiar Código
                 </button>
             </div>
+
             <button onclick="fecharModalProtocolo()" class="w-full bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold py-3.5 rounded-xl text-sm transition">
                 Compreendido
             </button>
         </div>
     </div>
+
+    <!-- ====== SCRIPTS DE LÓGICA ====== -->
     <script>
+        // GERENCIAR ARQUIVOS
         function handleFileSelect(event) {
             const files = Array.from(event.target.files);
             state.attachedFiles = files;
+
             const lista = document.getElementById('arquivos-lista');
             lista.innerHTML = '';
+
             files.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'file-preview';
-                div.innerHTML = `<i class="fa-solid fa-file"></i><span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span><span class="file-preview-remove" onclick="removerArquivo(${index})">✕</span>`;
+                div.innerHTML = `
+                    <i class="fa-solid fa-file"></i>
+                    <span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                    <span class="file-preview-remove" onclick="removerArquivo(${index})">✕</span>
+                `;
                 lista.appendChild(div);
             });
         }
+
         function removerArquivo(index) {
             state.attachedFiles.splice(index, 1);
             document.getElementById('arquivo-provas').value = '';
             handleFileSelect({ target: { files: state.attachedFiles } });
         }
+
+        // TROCAR ABAS
         function switchTab(tab) {
             document.getElementById('view-denunciar').classList.add('hidden');
             document.getElementById('view-consultar').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
+
             document.getElementById('btn-tab-denunciar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all";
             document.getElementById('btn-tab-consultar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all";
             document.getElementById('btn-tab-admin').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all border-l border-vigreen-800 ml-1";
+
             if(tab === 'denunciar') {
                 document.getElementById('view-denunciar').classList.remove('hidden');
                 document.getElementById('btn-tab-denunciar').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-vigold-500 text-slate-950 shadow-md";
@@ -365,18 +485,24 @@
                 carregarDenuncias();
             }
         }
+
+        // RENDERIZAR SELETOR DE EMPRESAS
         function renderDemoCompanySelector() {
             const select = document.getElementById('demo-company-selector');
             if (!select) return;
+
             select.innerHTML = '';
             state.empresas.forEach(emp => {
                 const isSel = emp.slug === state.currentEmpresaSlug ? 'selected' : '';
                 select.innerHTML += `<option value="${emp.slug}" ${isSel}>${emp.nome}</option>`;
             });
         }
+
+        // POPULAR SELECT DE EMPRESAS NO FORMULÁRIO
         function renderEmpresasSelect() {
             const select = document.getElementById('empresa-select');
             if (!select) return;
+
             select.innerHTML = '<option value="">Selecione sua empresa...</option>';
             state.empresas.forEach(emp => {
                 if (emp.status !== 'Inativa') {
@@ -384,15 +510,21 @@
                 }
             });
         }
+
+        // SIMULAR ACESSO POR EMPRESA
         function simularAcessoEmpresa(slug) {
             state.currentEmpresaSlug = slug;
             updateCurrentCompanyView();
         }
+
+        // ATUALIZAR VISUALIZAÇÃO DA EMPRESA
         function updateCurrentCompanyView() {
             const emp = state.empresas.find(e => e.slug === state.currentEmpresaSlug);
             if (!emp) return;
+
             const formContainer = document.getElementById('container-formulario-ativo');
             const inativaBanner = document.getElementById('banner-empresa-inativa');
+
             if (emp.status === 'Inativa') {
                 formContainer.classList.add('hidden');
                 inativaBanner.classList.remove('hidden');
@@ -401,11 +533,15 @@
                 formContainer.classList.remove('hidden');
             }
         }
+
+        // TOGGLE CAMPOS DE IDENTIFICAÇÃO
         function toggleIdentificacaoFields(isIdentified) {
             const fields = document.getElementById('fields-identificacao');
             if(isIdentified) fields.classList.remove('hidden');
             else fields.classList.add('hidden');
         }
+
+        // GERAR CÓDIGO ÚNICO CONSULTÁVEL
         function gerarCodigoUnico() {
             const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let codigo = '';
@@ -414,22 +550,29 @@
             }
             return codigo;
         }
+
+        // ENVIAR DENÚNCIA PARA SUPABASE
         async function handleReportSubmit(event) {
             event.preventDefault();
+
             const empresaSlug = document.getElementById('empresa-select').value;
             const empresa = state.empresas.find(e => e.slug === empresaSlug);
+
             if (!empresa) {
                 showToast('Selecione uma empresa válida', 'rose');
                 return;
             }
+
             if (empresa.status === 'Inativa') {
                 showToast('Canal indisponível para esta empresa', 'rose');
                 return;
             }
+
             const tipoAnonimato = document.querySelector('input[name="tipo_anonimato"]:checked').value;
             const categoria = document.getElementById('categoria-select').value;
             const gravidade = document.getElementById('gravidade-select').value;
             const relato = document.getElementById('relato-texto').value;
+
             let denunciante = null;
             if(tipoAnonimato === 'identificado') {
                 denunciante = {
@@ -438,98 +581,172 @@
                     telefone: document.getElementById('denunciante-telefone').value || ''
                 };
             }
+
+            // GERAR PROTOCOLO + CÓDIGO ÚNICO
             const ano = new Date().getFullYear();
             const numero = Math.floor(10000 + Math.random() * 90000);
             const protocolo = `DEN-${ano}-${numero}`;
             const codigoConsulta = gerarCodigoUnico();
+
             try {
-                const { data, error } = await supabaseClient.from('denuncias').insert({
-                    protocolo,
-                    codigo_consulta: codigoConsulta,
-                    empresa_slug: empresa.slug,
-                    empresa_nome: empresa.nome,
-                    tipo_identificacao: tipoAnonimato,
-                    denunciante,
-                    categoria,
-                    gravidade,
-                    relato,
-                    status: 'Nova',
-                    total_arquivos: state.attachedFiles.length
-                });
+                // INSERIR NO SUPABASE
+                const { data, error } = await supabaseClient
+                    .from('denuncias')
+                    .insert({
+                        protocolo,
+                        codigo_consulta: codigoConsulta,
+                        empresa_slug: empresa.slug,
+                        empresa_nome: empresa.nome,
+                        tipo_identificacao: tipoAnonimato,
+                        denunciante,
+                        categoria,
+                        gravidade,
+                        relato,
+                        status: 'Nova',
+                        total_arquivos: state.attachedFiles.length
+                    });
+
                 if (error) throw error;
+
+                // MOSTRAR SUCESSO
                 document.getElementById('display-protocolo-gerado').innerText = protocolo;
                 document.getElementById('display-codigo-consulta').innerText = codigoConsulta;
                 document.getElementById('modal-protocolo-sucesso').classList.remove('hidden');
+
+                // LIMPAR FORMULÁRIO
                 document.getElementById('form-denuncia').reset();
                 toggleIdentificacaoFields(false);
                 state.attachedFiles = [];
                 document.getElementById('arquivos-lista').innerHTML = '';
                 document.getElementById('empresa-select').value = '';
+
                 showToast('Manifestação registrada com sucesso!');
             } catch (error) {
                 console.error('Erro:', error);
                 showToast('Erro ao registrar denúncia: ' + error.message, 'rose');
             }
         }
+
+        // COPIAR PROTOCOLO
         function copiarProtocolo() {
             const proto = document.getElementById('display-protocolo-gerado').innerText;
             navigator.clipboard.writeText(proto).then(() => {
                 showToast('Protocolo copiado!');
             });
         }
+
+        // COPIAR CÓDIGO DE CONSULTA
         function copiarCodigoConsulta() {
             const codigo = document.getElementById('display-codigo-consulta').innerText;
             navigator.clipboard.writeText(codigo).then(() => {
                 showToast('Código de consulta copiado!');
             });
         }
+
+        // FECHAR MODAL
         function fecharModalProtocolo() {
             document.getElementById('modal-protocolo-sucesso').classList.add('hidden');
         }
+
+        // BUSCAR PROTOCOLO
         async function handleSearchProtocol(event) {
             event.preventDefault();
             const codigo = document.getElementById('input-protocolo-busca').value.trim().toUpperCase();
             const container = document.getElementById('resultado-protocolo');
+
             try {
-                const { data, error } = await supabaseClient.from('denuncias').select('*').eq('protocolo', codigo).single();
+                const { data, error } = await supabaseClient
+                    .from('denuncias')
+                    .select('*')
+                    .eq('protocolo', codigo)
+                    .single();
+
                 if (error || !data) {
-                    container.innerHTML = `<div class="text-center py-6 text-rose-600 bg-rose-50 rounded-2xl border border-rose-200"><i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i><p class="font-bold text-sm">Protocolo não encontrado.</p></div>`;
+                    container.innerHTML = `
+                        <div class="text-center py-6 text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
+                            <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
+                            <p class="font-bold text-sm">Protocolo não encontrado.</p>
+                        </div>
+                    `;
                     container.classList.remove('hidden');
                     return;
                 }
-                container.innerHTML = `<div class="space-y-4"><div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200"><div><div class="text-[10px] font-extrabold text-slate-400 uppercase">Protocolo</div><h3 class="text-xl font-bold text-vigreen-900 font-mono">${data.protocolo}</h3></div><span class="px-3.5 py-1 text-xs font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${data.status}</span></div><p class="text-sm text-slate-600"><strong>Categoria:</strong> ${data.categoria}</p><p class="text-sm text-slate-600"><strong>Gravidade:</strong> ${data.gravidade}</p><p class="text-sm text-slate-600"><strong>Data:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>${data.total_arquivos > 0 ? `<p class="text-sm text-slate-600"><strong>Anexos:</strong> ${data.total_arquivos} arquivo(s)</p>` : ''}</div>`;
+
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <div>
+                                <div class="text-[10px] font-extrabold text-slate-400 uppercase">Protocolo</div>
+                                <h3 class="text-xl font-bold text-vigreen-900 font-mono">${data.protocolo}</h3>
+                            </div>
+                            <span class="px-3.5 py-1 text-xs font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${data.status}</span>
+                        </div>
+                        <p class="text-sm text-slate-600"><strong>Categoria:</strong> ${data.categoria}</p>
+                        <p class="text-sm text-slate-600"><strong>Gravidade:</strong> ${data.gravidade}</p>
+                        <p class="text-sm text-slate-600"><strong>Data:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
+                        ${data.total_arquivos > 0 ? `<p class="text-sm text-slate-600"><strong>Anexos:</strong> ${data.total_arquivos} arquivo(s)</p>` : ''}
+                    </div>
+                `;
                 container.classList.remove('hidden');
             } catch (error) {
                 console.error('Erro:', error);
                 showToast('Erro ao consultar protocolo', 'rose');
             }
         }
+
+        // RENDERIZAR TABELA ADMIN
         function renderAdminTable() {
             const tbody = document.getElementById('admin-table-body');
+
             if (state.denuncias.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Nenhuma denúncia registrada.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = state.denuncias.map(d => `<tr class="hover:bg-slate-50"><td class="p-4 font-mono font-bold text-slate-900">${d.protocolo}</td><td class="p-4">${d.empresa_nome}</td><td class="p-4">${d.categoria}</td><td class="p-4">${d.gravidade}</td><td class="p-4 text-slate-500">${new Date(d.created_at).toLocaleDateString('pt-BR')}</td><td class="p-4"><span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${d.status}</span></td></tr>`).join('');
+
+            tbody.innerHTML = state.denuncias.map(d => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 font-mono font-bold text-slate-900">${d.protocolo}</td>
+                    <td class="p-4">${d.empresa_nome}</td>
+                    <td class="p-4">${d.categoria}</td>
+                    <td class="p-4">${d.gravidade}</td>
+                    <td class="p-4 text-slate-500">${new Date(d.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${d.status}</span></td>
+                </tr>
+            `).join('');
         }
-        function updateKPIs() {}
+
+        // ATUALIZAR KPIs
+        function updateKPIs() {
+            // Implementar depois
+        }
+
+        // TOAST
         function showToast(mensagem, color = 'emerald') {
             const toast = document.createElement('div');
             const bgClass = color === 'rose' ? 'bg-rose-900 border-rose-700' : 'bg-vigreen-900 border-vigreen-700';
             const iconClass = color === 'rose' ? 'fa-circle-xmark text-rose-400' : 'fa-circle-check text-vigold-500';
+
             toast.className = `fixed bottom-5 right-5 ${bgClass} text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold z-50 flex items-center gap-2 border`;
             toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mensagem}`;
             document.body.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 3000);
         }
+
+        // CRIAR SELETOR DE EMPRESA NA NAVBAR (se não existir)
         window.addEventListener('load', () => {
             const topbar = document.querySelector('[class*="bg-vigreen-950"]');
             if (topbar && !document.getElementById('demo-company-selector')) {
-                const html = `<div class="bg-vigreen-950 text-slate-300 text-xs py-2 px-4 flex flex-wrap items-center justify-between border-b border-vigreen-900 gap-2"><span class="text-slate-400 text-[10px]">Selecione empresa:</span><select id="demo-company-selector" onchange="simularAcessoEmpresa(this.value)" class="bg-vigreen-900 text-white text-xs border border-vigreen-700 rounded-lg px-2.5 py-1 outline-none focus:ring-1 focus:ring-vigold-500"></select></div>`;
+                const html = `
+                    <div class="bg-vigreen-950 text-slate-300 text-xs py-2 px-4 flex flex-wrap items-center justify-between border-b border-vigreen-900 gap-2">
+                        <span class="text-slate-400 text-[10px]">Selecione empresa:</span>
+                        <select id="demo-company-selector" onchange="simularAcessoEmpresa(this.value)" class="bg-vigreen-900 text-white text-xs border border-vigreen-700 rounded-lg px-2.5 py-1 outline-none focus:ring-1 focus:ring-vigold-500"></select>
+                    </div>
+                `;
                 topbar.parentElement.insertAdjacentHTML('beforebegin', html);
                 renderDemoCompanySelector();
             }
         });
     </script>
+
 </body>
 </html>
