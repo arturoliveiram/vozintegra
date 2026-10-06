@@ -1,30 +1,776 @@
-Selecione empresa:
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VozÍntegra - Canal de Denúncias</title>
 
-Acme Corporation
-Voz Íntegra
-Canal de Ética
- Manifestação
-Consultar
-Gestão
-Canal Protegido
-Registrar Manifestação / Denúncia
-Este canal é operado com isenção e total sigilo.
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-Opção de Identificação *
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
- Relato 100% Anônimo
-Sua identidade não é coletada.
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
- Relato Identificado
-Seus dados protegidos sob sigilo.
-Categoria *
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-Selecione...
-Gravidade *
+    <style>
+        :root {
+            --vigreen-950: #0b1d12;
+            --vigreen-900: #122c1b;
+            --vigreen-800: #1C4428;
+            --vigreen-700: #215431;
+            --vigreen-500: #2f7445;
+            --vigreen-200: #c5dacb;
+            --vigreen-100: #e3ede6;
+            --vigreen-50: #f2f7f4;
+            --vigold-500: #D98B1D;
+            --vigold-600: #c27915;
+            --vigold-700: #a1600f;
+        }
 
-Média
-Descrição Detalhada *
-Descreva os detalhes...
+        * { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
 
+        body {
+            background-color: #f8f9f8;
+            color: #333;
+        }
 
-Enviar Manifestação
+        header {
+            background: linear-gradient(135deg, var(--vigreen-900) 0%, var(--vigreen-800) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        header .container-fluid {
+            padding: 0 1.5rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-box {
+            background: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            color: var(--vigreen-800);
+            font-weight: bold;
+            font-size: 1.25rem;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .logo-text h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo-text p {
+            margin: 0;
+            font-size: 0.7rem;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-custom {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom {
+            background-color: var(--vigold-500);
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--vigold-600);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .btn-secondary-custom:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-color: white;
+            color: white;
+        }
+
+        select.form-select {
+            background-color: white;
+            color: var(--vigreen-800);
+            border: 1px solid #ddd;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .card-section {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-section h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--vigreen-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-section p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--vigreen-50);
+            color: var(--vigreen-800);
+            border: 1px solid var(--vigreen-200);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--vigreen-800);
+            box-shadow: 0 0 0 0.2rem rgba(28, 68, 40, 0.1);
+            outline: none;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .radio-option {
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .radio-option:hover {
+            border-color: var(--vigreen-800);
+            background-color: var(--vigreen-50);
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            font-weight: 600;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+        .radio-content h4 {
+            margin: 0 0 0.25rem 0;
+            color: var(--vigreen-800);
+            font-weight: 600;
+        }
+
+        .radio-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--vigreen-800) 0%, var(--vigreen-700) 100%);
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, var(--vigreen-900) 0%, var(--vigreen-800) 100%);
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 1rem;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            background-color: var(--vigreen-50);
+        }
+
+        .modal-header .btn-close {
+            background-color: transparent;
+        }
+
+        .protocolo-display {
+            background-color: var(--vigreen-50);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--vigreen-800);
+            text-align: center;
+        }
+
+        .protocolo-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--vigold-500);
+            font-family: 'Courier New', monospace;
+        }
+
+        .toast-custom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast-success {
+            background-color: #4caf50;
+        }
+
+        .toast-error {
+            background-color: #d32f2f;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .search-result {
+            padding: 1rem;
+            background-color: #f8f9f8;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--vigreen-800);
+            margin-top: 1rem;
+        }
+
+        .search-result.error {
+            border-left-color: #d32f2f;
+        }
+
+        .identificacao-fields {
+            padding: 1rem;
+            background-color: #fdf8f0;
+            border: 1px solid #f4dcaf;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="container-fluid d-flex justify-content-between align-items-center" style="min-height: 80px;">
+            <div class="logo-section">
+                <div class="logo-box">V</div>
+                <div class="logo-text">
+                    <h1>Voz Íntegra</h1>
+                    <p>Canal de Ética</p>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <select id="empresa-select" class="form-select" style="max-width: 200px;">
+                    <option value="">Selecione empresa...</option>
+                </select>
+                <button class="btn-custom btn-primary-custom" onclick="switchTab('denunciar')">
+                    <i class="fas fa-paper-plane"></i> Nova Manifestação
+                </button>
+                <button class="btn-custom btn-secondary-custom" onclick="switchTab('consultar')">
+                    <i class="fas fa-search"></i> Consultar
+                </button>
+                <button class="btn-custom btn-secondary-custom" onclick="switchTab('admin')">
+                    <i class="fas fa-shield-alt"></i> Gestão
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+        <div class="container">
+
+            <!-- TAB 1: DENUNCIAR -->
+            <div id="tab-denunciar">
+                <div class="card-section">
+                    <div class="badge-custom">
+                        <i class="fas fa-shield-halved"></i> Canal Protegido
+                    </div>
+
+                    <h2>Registrar Manifestação / Denúncia</h2>
+                    <p>Este canal é operado com isenção e total sigilo.</p>
+
+                    <form id="form-denuncia" onsubmit="handleReportSubmit(event)">
+
+                        <!-- TIPO DE IDENTIFICAÇÃO -->
+                        <div class="form-group">
+                            <label class="form-label">Opção de Identificação *</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="anonimo" name="tipo_identificacao" value="anonimo" checked onchange="toggleIdentificacaoFields()">
+                                    <label for="anonimo" class="radio-content">
+                                        <h4><i class="fas fa-user-ninja"></i> Relato 100% Anônimo</h4>
+                                        <p>Sua identidade não é coletada.</p>
+                                    </label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="identificado" name="tipo_identificacao" value="identificado" onchange="toggleIdentificacaoFields()">
+                                    <label for="identificado" class="radio-content">
+                                        <h4><i class="fas fa-user-check"></i> Relato Identificado</h4>
+                                        <p>Seus dados protegidos sob sigilo.</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CAMPOS DE IDENTIFICAÇÃO -->
+                        <div id="identificacao-fields" class="identificacao-fields hidden">
+                            <div class="two-col">
+                                <div class="form-group">
+                                    <label class="form-label">Nome</label>
+                                    <input type="text" id="denunciante-nome" class="form-control" placeholder="Seu nome...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="denunciante-email" class="form-control" placeholder="seu@email.com">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefone</label>
+                                <input type="tel" id="denunciante-telefone" class="form-control" placeholder="(11) 9999-9999">
+                            </div>
+                        </div>
+
+                        <!-- CATEGORIA E GRAVIDADE -->
+                        <div class="two-col">
+                            <div class="form-group">
+                                <label class="form-label">Categoria *</label>
+                                <select id="categoria-select" class="form-select" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Assédio">Assédio</option>
+                                    <option value="Fraude">Fraude</option>
+                                    <option value="Discriminação">Discriminação</option>
+                                    <option value="Segurança">Segurança</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gravidade *</label>
+                                <select id="gravidade-select" class="form-select" required>
+                                    <option value="Baixa">Baixa</option>
+                                    <option value="Média" selected>Média</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Crítica">Crítica</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- DESCRIÇÃO -->
+                        <div class="form-group">
+                            <label class="form-label">Descrição Detalhada *</label>
+                            <textarea id="relato-texto" class="form-control" placeholder="Descreva os detalhes..." required></textarea>
+                        </div>
+
+                        <!-- BOTÃO ENVIAR -->
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Enviar Manifestação
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 2: CONSULTAR -->
+            <div id="tab-consultar" class="hidden">
+                <div class="card-section">
+                    <h2>Acompanhar Andamento</h2>
+                    <p>Digite seu protocolo para consultar o status.</p>
+
+                    <form onsubmit="handleSearchProtocol(event)">
+                        <div class="input-group">
+                            <input type="text" id="protocolo-busca" class="form-control" placeholder="Ex: DEN-2026-12345" required>
+                            <button class="btn btn-primary" type="submit" style="background-color: var(--vigreen-800);">
+                                <i class="fas fa-search"></i> Consultar
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="resultado-busca" class="search-result hidden"></div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ADMIN -->
+            <div id="tab-admin" class="hidden">
+                <div class="card-section">
+                    <h2>Painel Administrativo</h2>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Protocolo</th>
+                                    <th>Empresa</th>
+                                    <th>Categoria</th>
+                                    <th>Gravidade</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body">
+                                <tr><td colspan="6" class="text-center text-muted">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL: PROTOCOLO GERADO -->
+    <div class="modal fade" id="modalProtocolo" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-check-circle text-success"></i> Manifestação Registrada!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Seu protocolo de rastreamento foi gerado:</p>
+                    <div class="protocolo-display">
+                        <div class="protocolo-number" id="protocolo-gerado">DEN-00000</div>
+                    </div>
+                    <p>Guarde este número para acompanhar sua manifestação.</p>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: var(--vigreen-800);">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- MAIN SCRIPT -->
+    <script>
+        // CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = 'https://vbgrkpfozgitikgiklin.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_lPOC3pQ13sTb8D7fcy0eGw_eOYWXzw0';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let state = {
+            empresas: [],
+            empresaSelecionada: null
+        };
+
+        // CARREGAR EMPRESAS
+        async function carregarEmpresas() {
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('id, nome, slug')
+                    .order('nome');
+
+                if (error) throw error;
+
+                state.empresas = data || [];
+                const select = document.getElementById('empresa-select');
+
+                state.empresas.forEach(emp => {
+                    const option = document.createElement('option');
+                    option.value = emp.slug;
+                    option.textContent = emp.nome;
+                    select.appendChild(option);
+                });
+
+                if (state.empresas.length > 0) {
+                    select.value = state.empresas[0].slug;
+                    state.empresaSelecionada = state.empresas[0];
+                }
+
+                select.addEventListener('change', (e) => {
+                    state.empresaSelecionada = state.empresas.find(x => x.slug === e.target.value);
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar empresas:', error);
+                showToast('Erro ao carregar empresas', 'error');
+            }
+        }
+
+        // ENVIAR DENÚNCIA
+        async function handleReportSubmit(event) {
+            event.preventDefault();
+
+            if (!state.empresaSelecionada) {
+                showToast('Selecione uma empresa', 'error');
+                return;
+            }
+
+            const tipoIdentificacao = document.querySelector('input[name="tipo_identificacao"]:checked').value;
+            const categoria = document.getElementById('categoria-select').value;
+            const gravidade = document.getElementById('gravidade-select').value;
+            const relato = document.getElementById('relato-texto').value;
+
+            let denunciante = null;
+            if (tipoIdentificacao === 'identificado') {
+                denunciante = {
+                    nome: document.getElementById('denunciante-nome').value,
+                    email: document.getElementById('denunciante-email').value,
+                    telefone: document.getElementById('denunciante-telefone').value
+                };
+            }
+
+            try {
+                const protocolo = `DEN-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
+
+                const { error } = await supabase
+                    .from('denuncias')
+                    .insert({
+                        protocolo,
+                        empresa_slug: state.empresaSelecionada.slug,
+                        empresa_nome: state.empresaSelecionada.nome,
+                        tipo_identificacao: tipoIdentificacao,
+                        denunciante: denunciante,
+                        categoria,
+                        gravidade,
+                        relato,
+                        status: 'Nova'
+                    });
+
+                if (error) throw error;
+
+                document.getElementById('protocolo-gerado').textContent = protocolo;
+                new bootstrap.Modal(document.getElementById('modalProtocolo')).show();
+                document.getElementById('form-denuncia').reset();
+                toggleIdentificacaoFields();
+                showToast('Manifestação enviada com sucesso!', 'success');
+
+            } catch (error) {
+                console.error('Erro ao enviar:', error);
+                showToast('Erro ao enviar manifestação', 'error');
+            }
+        }
+
+        // BUSCAR PROTOCOLO
+        async function handleSearchProtocol(event) {
+            event.preventDefault();
+            const protocolo = document.getElementById('protocolo-busca').value.trim().toUpperCase();
+            const container = document.getElementById('resultado-busca');
+
+            try {
+                const { data, error } = await supabase
+                    .from('denuncias')
+                    .select('protocolo, categoria, gravidade, status, created_at')
+                    .eq('protocolo', protocolo)
+                    .single();
+
+                if (error || !data) {
+                    container.innerHTML = '<div class="text-danger"><i class="fas fa-exclamation-circle"></i> Protocolo não encontrado.</div>';
+                    container.classList.add('error');
+                    container.classList.remove('hidden');
+                    return;
+                }
+
+                container.innerHTML = `
+                    <strong>Protocolo:</strong> ${data.protocolo}<br>
+                    <strong>Categoria:</strong> ${data.categoria}<br>
+                    <strong>Gravidade:</strong> ${data.gravidade}<br>
+                    <strong>Status:</strong> <span class="badge bg-info">${data.status}</span><br>
+                    <strong>Data:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}
+                `;
+                container.classList.remove('error', 'hidden');
+
+            } catch (error) {
+                console.error('Erro ao buscar:', error);
+                showToast('Erro ao buscar protocolo', 'error');
+            }
+        }
+
+        // TROCAR ABAS
+        function switchTab(tab) {
+            document.getElementById('tab-denunciar').classList.toggle('hidden', tab !== 'denunciar');
+            document.getElementById('tab-consultar').classList.toggle('hidden', tab !== 'consultar');
+            document.getElementById('tab-admin').classList.toggle('hidden', tab !== 'admin');
+
+            if (tab === 'admin') {
+                carregarDenuncias();
+            }
+        }
+
+        // CARREGAR DENÚNCIAS (ADMIN)
+        async function carregarDenuncias() {
+            try {
+                const { data, error } = await supabase
+                    .from('denuncias')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('admin-table-body');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhuma denúncia registrada.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(d => `
+                    <tr>
+                        <td><code>${d.protocolo}</code></td>
+                        <td>${d.empresa_nome}</td>
+                        <td>${d.categoria}</td>
+                        <td>${d.gravidade}</td>
+                        <td>${new Date(d.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td><span class="badge bg-primary">${d.status}</span></td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Erro ao carregar denúncias:', error);
+                showToast('Erro ao carregar denúncias', 'error');
+            }
+        }
+
+        // TOGGLE CAMPOS DE IDENTIFICAÇÃO
+        function toggleIdentificacaoFields() {
+            const tipo = document.querySelector('input[name="tipo_identificacao"]:checked').value;
+            document.getElementById('identificacao-fields').classList.toggle('hidden', tipo === 'anonimo');
+        }
+
+        // TOAST
+        function showToast(mensagem, tipo = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-custom toast-${tipo}`;
+            toast.textContent = mensagem;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // INICIALIZAR
+        window.addEventListener('load', carregarEmpresas);
+    </script>
+</body>
+</html>
