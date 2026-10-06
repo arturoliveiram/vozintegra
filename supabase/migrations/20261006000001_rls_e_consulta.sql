@@ -128,6 +128,17 @@ create policy "denuncias exclusao admin" on public.denuncias
 -- Defesa extra: o papel anônimo nunca lê/altera a tabela diretamente.
 revoke select, update, delete, truncate on public.denuncias from anon;
 
+-- Tabela de andamentos (ainda sem uso no site): só admin.
+alter table public.andamentos enable row level security;
+
+drop policy if exists "andamentos gestao admin" on public.andamentos;
+create policy "andamentos gestao admin" on public.andamentos
+    for all to authenticated
+    using (public.is_admin())
+    with check (public.is_admin());
+
+revoke all on public.andamentos from anon;
+
 -- -------------------------------------------------------------------
 -- 4. Consulta pública pelo código de consulta (sem dados sensíveis)
 -- -------------------------------------------------------------------

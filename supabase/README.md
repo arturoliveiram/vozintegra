@@ -2,6 +2,7 @@
 
 Rode no **SQL Editor** do Supabase, nesta ordem (cada arquivo pode ser executado mais de uma vez):
 
+0. `migrations/20261006000000_alinhar_esquema.sql` adiciona ao banco as colunas que o site usa e remove as políticas antigas que liberavam tudo.
 1. `migrations/20261006000001_rls_e_consulta.sql` ativa RLS, cria a tabela `admins` e a função `consultar_denuncia`.
 2. `migrations/20261006000002_storage_anexos.sql` cria o bucket privado `anexos` (10 MB, PDF/imagens/Word) e suas políticas.
 3. `migrations/20261006000003_empresa_ergohealth.sql` cadastra a ErgoHealth Ltda e desativa a empresa de demonstração.
