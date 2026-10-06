@@ -129,41 +129,55 @@
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const ANEXOS_BUCKET = 'anexos';
+        const ANEXO_MAX_BYTES = 10 * 1024 * 1024;
+        const ANEXO_MAX_ARQUIVOS = 10;
+        const ANEXO_TIPOS = [
+            'application/pdf',
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        const STATUS_OPCOES = ['Nova', 'Em análise', 'Em apuração', 'Concluída', 'Arquivada'];
+
         let state = {
-            currentEmpresaSlug: 'acme-corporation',
+            currentEmpresaSlug: 'ergohealth',
             empresas: [],
             denuncias: [],
-            selectedProtocoloAdmin: null,
-            selectedEmpresaQRCode: null,
-            attachedFiles: []
+            selectedDenunciaAdmin: null,
+            attachedFiles: [],
+            adminSession: null
         };
+
+        // ESCAPAR TEXTO DO USUÁRIO ANTES DE INSERIR EM HTML
+        function escapeHtml(valor) {
+            return String(valor ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
         // CARREGAR EMPRESAS DO SUPABASE
         async function carregarEmpresas() {
             try {
-                console.log('Iniciando carregamento de empresas...');
                 const { data, error } = await supabaseClient
                     .from('empresas')
                     .select('*')
                     .limit(100);
 
-                console.log('Resposta Supabase:', { data, error });
+                if (error) throw error;
 
-                if (error) {
-                    console.error('Erro na query:', error);
-                    throw error;
-                }
-
-                state.empresas = data || [];
-                console.log('Empresas carregadas:', state.empresas);
+                state.empresas = (data || []).filter(e => e.status !== 'Inativa');
 
                 if (state.empresas.length > 0) {
-                    state.currentEmpresaSlug = state.empresas[0].slug;
+                    const padrao = state.empresas.find(e => e.slug === state.currentEmpresaSlug);
+                    state.currentEmpresaSlug = (padrao || state.empresas[0]).slug;
                 } else {
-                    console.warn('Nenhuma empresa encontrada');
+                    state.currentEmpresaSlug = null;
                 }
 
-                renderDemoCompanySelector();
                 renderEmpresasSelect();
                 updateCurrentCompanyView();
             } catch (error) {
@@ -172,7 +186,7 @@
             }
         }
 
-        // CARREGAR DENÚNCIAS (para admin)
+        // CARREGAR DENÚNCIAS (para admin autenticado)
         async function carregarDenuncias() {
             try {
                 const { data, error } = await supabaseClient
@@ -184,15 +198,21 @@
 
                 state.denuncias = data || [];
                 renderAdminTable();
-                updateKPIs();
             } catch (error) {
                 console.error('Erro ao carregar denúncias:', error);
+                showToast('Erro ao carregar denúncias: ' + error.message, 'rose');
             }
         }
 
         // INICIALIZAR
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             carregarEmpresas();
+            const { data } = await supabaseClient.auth.getSession();
+            state.adminSession = data.session;
+            supabaseClient.auth.onAuthStateChange((_evento, sessao) => {
+                state.adminSession = sessao;
+                if (!document.getElementById('view-admin').classList.contains('hidden')) renderAdminView();
+            });
         });
     </script>
 
@@ -341,8 +361,8 @@
                     <!-- ANEXAR PROVAS -->
                     <div>
                         <label for="arquivo-provas" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Anexar Provas (Imagens, PDFs, etc)</label>
-                        <input type="file" id="arquivo-provas" multiple accept="image/*,.pdf,.doc,.docx" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm" onchange="handleFileSelect(event)">
-                        <p class="text-xs text-slate-500 mt-1">Você pode anexar prints, PDFs, documentos e imagens como comprovação.</p>
+                        <input type="file" id="arquivo-provas" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.doc,.docx" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm" onchange="handleFileSelect(event)">
+                        <p class="text-xs text-slate-500 mt-1">PDF, imagens ou Word, até 10 MB por arquivo e no máximo 10 arquivos. Os anexos ficam guardados com acesso restrito à equipe de compliance.</p>
                         <div id="arquivos-lista" class="mt-3 space-y-2"></div>
                     </div>
 
@@ -361,11 +381,11 @@
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-3xl mx-auto">
                 <div class="text-center max-w-lg mx-auto mb-8">
                     <h2 class="text-2xl font-extrabold text-vigreen-900 font-display">Acompanhar Andamento</h2>
-                    <p class="text-slate-600 text-sm mt-1">Digite seu protocolo para consultar o status.</p>
+                    <p class="text-slate-600 text-sm mt-1">Digite o código de consulta de 8 caracteres recebido ao registrar a manifestação.</p>
                 </div>
 
                 <form onsubmit="handleSearchProtocol(event)" class="flex flex-col sm:flex-row gap-3 mb-8">
-                    <input type="text" id="input-protocolo-busca" placeholder="Ex: DEN-2026-98124" required class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <input type="text" id="input-protocolo-busca" placeholder="Ex: OQC6NC2K" required maxlength="8" autocomplete="off" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
                     <button type="submit" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-7 py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-md">
                         <i class="fa-solid fa-magnifying-glass text-vigold-500"></i> Consultar
                     </button>
@@ -377,24 +397,49 @@
 
         <!-- ====== ABA 3: ADMIN ====== -->
         <section id="view-admin" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                            <tr>
-                                <th class="p-4">Protocolo</th>
-                                <th class="p-4">Empresa</th>
-                                <th class="p-4">Categoria</th>
-                                <th class="p-4">Gravidade</th>
-                                <th class="p-4">Data</th>
-                                <th class="p-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-slate-100">
-                            <!-- Preenchido via JS -->
-                        </tbody>
-                    </table>
+            <!-- LOGIN -->
+            <div id="admin-login" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-md mx-auto">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-extrabold text-vigreen-900 font-display">Acesso Restrito</h2>
+                    <p class="text-slate-600 text-sm mt-1">Área exclusiva da equipe de compliance.</p>
                 </div>
+                <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                    <input type="email" id="admin-email" required placeholder="E-mail" autocomplete="username" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <input type="password" id="admin-senha" required placeholder="Senha" autocomplete="current-password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <button type="submit" class="w-full bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold py-3.5 rounded-xl text-sm transition">
+                        <i class="fa-solid fa-right-to-bracket text-vigold-500 mr-1.5"></i> Entrar
+                    </button>
+                </form>
+            </div>
+
+            <!-- PAINEL -->
+            <div id="admin-painel" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <span id="admin-usuario" class="text-xs text-slate-500"></span>
+                    <button onclick="handleAdminLogout()" class="text-xs font-bold text-vigreen-800 hover:text-vigreen-900">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Sair
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="p-4">Protocolo</th>
+                                    <th class="p-4">Empresa</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Gravidade</th>
+                                    <th class="p-4">Data</th>
+                                    <th class="p-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="divide-y divide-slate-100">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="admin-detalhe" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4"></div>
             </div>
         </section>
 
@@ -438,19 +483,37 @@
     <!-- ====== SCRIPTS DE LÓGICA ====== -->
     <script>
         // GERENCIAR ARQUIVOS
-        function handleFileSelect(event) {
-            const files = Array.from(event.target.files);
-            state.attachedFiles = files;
+        function validarArquivo(file) {
+            if (file.size > ANEXO_MAX_BYTES) return `${file.name}: maior que 10 MB`;
+            if (!ANEXO_TIPOS.includes(file.type)) return `${file.name}: tipo não permitido (use PDF, imagem ou Word)`;
+            return null;
+        }
 
+        function handleFileSelect(event) {
+            const selecionados = Array.from(event.target.files);
+            const erros = selecionados.map(validarArquivo).filter(Boolean);
+            let files = selecionados.filter(f => !validarArquivo(f));
+
+            if (files.length > ANEXO_MAX_ARQUIVOS) {
+                erros.push(`Máximo de ${ANEXO_MAX_ARQUIVOS} arquivos`);
+                files = files.slice(0, ANEXO_MAX_ARQUIVOS);
+            }
+            if (erros.length) showToast(erros.join(' · '), 'rose');
+
+            state.attachedFiles = files;
+            renderArquivosLista();
+        }
+
+        function renderArquivosLista() {
             const lista = document.getElementById('arquivos-lista');
             lista.innerHTML = '';
 
-            files.forEach((file, index) => {
+            state.attachedFiles.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'file-preview';
                 div.innerHTML = `
                     <i class="fa-solid fa-file"></i>
-                    <span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                    <span>${escapeHtml(file.name)} (${(file.size / 1024).toFixed(2)} KB)</span>
                     <span class="file-preview-remove" onclick="removerArquivo(${index})">✕</span>
                 `;
                 lista.appendChild(div);
@@ -460,7 +523,12 @@
         function removerArquivo(index) {
             state.attachedFiles.splice(index, 1);
             document.getElementById('arquivo-provas').value = '';
-            handleFileSelect({ target: { files: state.attachedFiles } });
+            renderArquivosLista();
+        }
+
+        function nomeSeguroArquivo(nome, index) {
+            const base = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
+            return `${index + 1}-${base}`;
         }
 
         // TROCAR ABAS
@@ -482,20 +550,8 @@
             } else if(tab === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
                 document.getElementById('btn-tab-admin').className = "px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-vigold-500 text-slate-950 shadow-md border-l border-vigreen-800 ml-1";
-                carregarDenuncias();
+                renderAdminView();
             }
-        }
-
-        // RENDERIZAR SELETOR DE EMPRESAS
-        function renderDemoCompanySelector() {
-            const select = document.getElementById('demo-company-selector');
-            if (!select) return;
-
-            select.innerHTML = '';
-            state.empresas.forEach(emp => {
-                const isSel = emp.slug === state.currentEmpresaSlug ? 'selected' : '';
-                select.innerHTML += `<option value="${emp.slug}" ${isSel}>${emp.nome}</option>`;
-            });
         }
 
         // POPULAR SELECT DE EMPRESAS NO FORMULÁRIO
@@ -505,27 +561,17 @@
 
             select.innerHTML = '<option value="">Selecione sua empresa...</option>';
             state.empresas.forEach(emp => {
-                if (emp.status !== 'Inativa') {
-                    select.innerHTML += `<option value="${emp.slug}">${emp.nome}</option>`;
-                }
+                const sel = emp.slug === state.currentEmpresaSlug ? 'selected' : '';
+                select.innerHTML += `<option value="${escapeHtml(emp.slug)}" ${sel}>${escapeHtml(emp.nome)}</option>`;
             });
         }
 
-        // SIMULAR ACESSO POR EMPRESA
-        function simularAcessoEmpresa(slug) {
-            state.currentEmpresaSlug = slug;
-            updateCurrentCompanyView();
-        }
-
-        // ATUALIZAR VISUALIZAÇÃO DA EMPRESA
+        // MOSTRAR AVISO QUANDO NÃO HÁ EMPRESA ATIVA
         function updateCurrentCompanyView() {
-            const emp = state.empresas.find(e => e.slug === state.currentEmpresaSlug);
-            if (!emp) return;
-
             const formContainer = document.getElementById('container-formulario-ativo');
             const inativaBanner = document.getElementById('banner-empresa-inativa');
 
-            if (emp.status === 'Inativa') {
+            if (state.empresas.length === 0) {
                 formContainer.classList.add('hidden');
                 inativaBanner.classList.remove('hidden');
             } else {
@@ -541,14 +587,34 @@
             else fields.classList.add('hidden');
         }
 
-        // GERAR CÓDIGO ÚNICO CONSULTÁVEL
+        // GERAR CÓDIGO ÚNICO CONSULTÁVEL (aleatoriedade criptográfica)
         function gerarCodigoUnico() {
             const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let codigo = '';
-            for (let i = 0; i < 8; i++) {
-                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            const bytes = new Uint32Array(8);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes, b => caracteres[b % caracteres.length]).join('');
+        }
+
+        function gerarProtocolo() {
+            const ano = new Date().getFullYear();
+            const numero = 10000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 90000);
+            return `DEN-${ano}-${numero}`;
+        }
+
+        // ENVIAR ANEXOS PARA O STORAGE
+        async function enviarAnexos(denunciaId, files) {
+            let falhas = 0;
+            for (let i = 0; i < files.length; i++) {
+                const caminho = `${denunciaId}/${nomeSeguroArquivo(files[i].name, i)}`;
+                const { error } = await supabaseClient.storage
+                    .from(ANEXOS_BUCKET)
+                    .upload(caminho, files[i], { contentType: files[i].type, upsert: false });
+                if (error) {
+                    console.error('Erro ao enviar anexo:', files[i].name, error);
+                    falhas++;
+                }
             }
-            return codigo;
+            return falhas;
         }
 
         // ENVIAR DENÚNCIA PARA SUPABASE
@@ -563,15 +629,12 @@
                 return;
             }
 
-            if (empresa.status === 'Inativa') {
-                showToast('Canal indisponível para esta empresa', 'rose');
-                return;
-            }
-
+            const botao = event.submitter || document.querySelector('#form-denuncia button[type="submit"]');
             const tipoAnonimato = document.querySelector('input[name="tipo_anonimato"]:checked').value;
             const categoria = document.getElementById('categoria-select').value;
             const gravidade = document.getElementById('gravidade-select').value;
             const relato = document.getElementById('relato-texto').value;
+            const arquivos = [...state.attachedFiles];
 
             let denunciante = null;
             if(tipoAnonimato === 'identificado') {
@@ -582,31 +645,36 @@
                 };
             }
 
-            // GERAR PROTOCOLO + CÓDIGO ÚNICO
-            const ano = new Date().getFullYear();
-            const numero = Math.floor(10000 + Math.random() * 90000);
-            const protocolo = `DEN-${ano}-${numero}`;
+            const denunciaId = crypto.randomUUID();
             const codigoConsulta = gerarCodigoUnico();
+            let protocolo;
 
+            botao.disabled = true;
             try {
-                // INSERIR NO SUPABASE
-                const { data, error } = await supabaseClient
-                    .from('denuncias')
-                    .insert({
-                        protocolo,
-                        codigo_consulta: codigoConsulta,
-                        empresa_slug: empresa.slug,
-                        empresa_nome: empresa.nome,
-                        tipo_identificacao: tipoAnonimato,
-                        denunciante,
-                        categoria,
-                        gravidade,
-                        relato,
-                        status: 'Nova',
-                        total_arquivos: state.attachedFiles.length
-                    });
+                // INSERIR NO SUPABASE (nova tentativa se o protocolo já existir)
+                for (let tentativa = 0; tentativa < 3; tentativa++) {
+                    protocolo = gerarProtocolo();
+                    const { error } = await supabaseClient
+                        .from('denuncias')
+                        .insert({
+                            id: denunciaId,
+                            protocolo,
+                            codigo_consulta: codigoConsulta,
+                            empresa_slug: empresa.slug,
+                            empresa_nome: empresa.nome,
+                            tipo_identificacao: tipoAnonimato,
+                            denunciante,
+                            categoria,
+                            gravidade,
+                            relato,
+                            total_arquivos: arquivos.length
+                        });
 
-                if (error) throw error;
+                    if (!error) break;
+                    if (error.code !== '23505' || tentativa === 2) throw error;
+                }
+
+                const falhas = arquivos.length ? await enviarAnexos(denunciaId, arquivos) : 0;
 
                 // MOSTRAR SUCESSO
                 document.getElementById('display-protocolo-gerado').innerText = protocolo;
@@ -618,12 +686,18 @@
                 toggleIdentificacaoFields(false);
                 state.attachedFiles = [];
                 document.getElementById('arquivos-lista').innerHTML = '';
-                document.getElementById('empresa-select').value = '';
+                renderEmpresasSelect();
 
-                showToast('Manifestação registrada com sucesso!');
+                if (falhas > 0) {
+                    showToast(`Manifestação registrada, mas ${falhas} anexo(s) não foram enviados.`, 'rose');
+                } else {
+                    showToast('Manifestação registrada com sucesso!');
+                }
             } catch (error) {
                 console.error('Erro:', error);
                 showToast('Erro ao registrar denúncia: ' + error.message, 'rose');
+            } finally {
+                botao.disabled = false;
             }
         }
 
@@ -648,24 +722,22 @@
             document.getElementById('modal-protocolo-sucesso').classList.add('hidden');
         }
 
-        // BUSCAR PROTOCOLO
+        // CONSULTAR PELO CÓDIGO DE CONSULTA (RPC sem dados sensíveis)
         async function handleSearchProtocol(event) {
             event.preventDefault();
             const codigo = document.getElementById('input-protocolo-busca').value.trim().toUpperCase();
             const container = document.getElementById('resultado-protocolo');
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('denuncias')
-                    .select('*')
-                    .eq('protocolo', codigo)
-                    .single();
+                const { data: linhas, error } = await supabaseClient
+                    .rpc('consultar_denuncia', { p_codigo: codigo });
+                const data = linhas && linhas[0];
 
                 if (error || !data) {
                     container.innerHTML = `
                         <div class="text-center py-6 text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
                             <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
-                            <p class="font-bold text-sm">Protocolo não encontrado.</p>
+                            <p class="font-bold text-sm">Código de consulta não encontrado.</p>
                         </div>
                     `;
                     container.classList.remove('hidden');
@@ -677,21 +749,53 @@
                         <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
                             <div>
                                 <div class="text-[10px] font-extrabold text-slate-400 uppercase">Protocolo</div>
-                                <h3 class="text-xl font-bold text-vigreen-900 font-mono">${data.protocolo}</h3>
+                                <h3 class="text-xl font-bold text-vigreen-900 font-mono">${escapeHtml(data.protocolo)}</h3>
                             </div>
-                            <span class="px-3.5 py-1 text-xs font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${data.status}</span>
+                            <span class="px-3.5 py-1 text-xs font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${escapeHtml(data.status)}</span>
                         </div>
-                        <p class="text-sm text-slate-600"><strong>Categoria:</strong> ${data.categoria}</p>
-                        <p class="text-sm text-slate-600"><strong>Gravidade:</strong> ${data.gravidade}</p>
+                        <p class="text-sm text-slate-600"><strong>Categoria:</strong> ${escapeHtml(data.categoria)}</p>
+                        <p class="text-sm text-slate-600"><strong>Gravidade:</strong> ${escapeHtml(data.gravidade)}</p>
                         <p class="text-sm text-slate-600"><strong>Data:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
-                        ${data.total_arquivos > 0 ? `<p class="text-sm text-slate-600"><strong>Anexos:</strong> ${data.total_arquivos} arquivo(s)</p>` : ''}
+                        ${data.total_arquivos > 0 ? `<p class="text-sm text-slate-600"><strong>Anexos:</strong> ${Number(data.total_arquivos)} arquivo(s)</p>` : ''}
                     </div>
                 `;
                 container.classList.remove('hidden');
             } catch (error) {
                 console.error('Erro:', error);
-                showToast('Erro ao consultar protocolo', 'rose');
+                showToast('Erro ao consultar', 'rose');
             }
+        }
+
+        // ADMIN: LOGIN / LOGOUT
+        function renderAdminView() {
+            const logado = !!state.adminSession;
+            document.getElementById('admin-login').classList.toggle('hidden', logado);
+            document.getElementById('admin-painel').classList.toggle('hidden', !logado);
+            if (logado) {
+                document.getElementById('admin-usuario').innerText = state.adminSession.user.email || '';
+                carregarDenuncias();
+            }
+        }
+
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: document.getElementById('admin-email').value.trim(),
+                password: document.getElementById('admin-senha').value
+            });
+            if (error) {
+                showToast('Não foi possível entrar: ' + error.message, 'rose');
+                return;
+            }
+            document.getElementById('admin-senha').value = '';
+        }
+
+        async function handleAdminLogout() {
+            await supabaseClient.auth.signOut();
+            state.denuncias = [];
+            state.selectedDenunciaAdmin = null;
+            document.getElementById('admin-table-body').innerHTML = '';
+            document.getElementById('admin-detalhe').classList.add('hidden');
         }
 
         // RENDERIZAR TABELA ADMIN
@@ -699,25 +803,85 @@
             const tbody = document.getElementById('admin-table-body');
 
             if (state.denuncias.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Nenhuma denúncia registrada.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Nenhuma denúncia visível. Se você acabou de entrar, confirme que seu usuário está cadastrado como administrador.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = state.denuncias.map(d => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 font-mono font-bold text-slate-900">${d.protocolo}</td>
-                    <td class="p-4">${d.empresa_nome}</td>
-                    <td class="p-4">${d.categoria}</td>
-                    <td class="p-4">${d.gravidade}</td>
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="abrirDetalheAdmin('${escapeHtml(d.id)}')">
+                    <td class="p-4 font-mono font-bold text-slate-900">${escapeHtml(d.protocolo)}</td>
+                    <td class="p-4">${escapeHtml(d.empresa_nome)}</td>
+                    <td class="p-4">${escapeHtml(d.categoria)}</td>
+                    <td class="p-4">${escapeHtml(d.gravidade)}</td>
                     <td class="p-4 text-slate-500">${new Date(d.created_at).toLocaleDateString('pt-BR')}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${d.status}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${escapeHtml(d.status)}</span></td>
                 </tr>
             `).join('');
         }
 
-        // ATUALIZAR KPIs
-        function updateKPIs() {
-            // Implementar depois
+        // DETALHE DA DENÚNCIA (somente admin)
+        async function abrirDetalheAdmin(id) {
+            const d = state.denuncias.find(x => x.id === id);
+            if (!d) return;
+            state.selectedDenunciaAdmin = d;
+
+            const painel = document.getElementById('admin-detalhe');
+            const ident = d.denunciante
+                ? `<p class="text-sm"><strong>Denunciante:</strong> ${escapeHtml(d.denunciante.nome)} · ${escapeHtml(d.denunciante.email)} · ${escapeHtml(d.denunciante.telefone)}</p>`
+                : `<p class="text-sm text-slate-500"><i class="fa-solid fa-user-ninja mr-1"></i> Relato anônimo</p>`;
+            const opcoes = STATUS_OPCOES.includes(d.status) ? STATUS_OPCOES : [d.status, ...STATUS_OPCOES];
+
+            painel.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-lg font-bold text-vigreen-900 font-mono">${escapeHtml(d.protocolo)}</h3>
+                    <div class="flex items-center gap-2">
+                        <select id="admin-status-select" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            ${opcoes.map(s => `<option ${s === d.status ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+                        </select>
+                        <button onclick="salvarStatusAdmin()" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-4 py-2 rounded-xl text-xs">Salvar status</button>
+                    </div>
+                </div>
+                <p class="text-sm"><strong>Empresa:</strong> ${escapeHtml(d.empresa_nome)} · <strong>Categoria:</strong> ${escapeHtml(d.categoria)} · <strong>Gravidade:</strong> ${escapeHtml(d.gravidade)}</p>
+                ${ident}
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm whitespace-pre-wrap">${escapeHtml(d.relato)}</div>
+                <div id="admin-anexos" class="text-sm text-slate-500">Carregando anexos...</div>
+            `;
+            painel.classList.remove('hidden');
+            painel.scrollIntoView({ behavior: 'smooth' });
+
+            const alvo = document.getElementById('admin-anexos');
+            const { data: arquivos, error } = await supabaseClient.storage.from(ANEXOS_BUCKET).list(d.id);
+            if (error) {
+                alvo.innerText = 'Erro ao listar anexos: ' + error.message;
+                return;
+            }
+            if (!arquivos || arquivos.length === 0) {
+                alvo.innerText = d.total_arquivos > 0 ? `Nenhum anexo armazenado (${d.total_arquivos} declarado(s)).` : 'Sem anexos.';
+                return;
+            }
+            const caminhos = arquivos.map(a => `${d.id}/${a.name}`);
+            const { data: urls } = await supabaseClient.storage.from(ANEXOS_BUCKET).createSignedUrls(caminhos, 600);
+            alvo.innerHTML = '<strong class="text-slate-700">Anexos:</strong><ul class="list-disc ml-5 mt-1">' +
+                arquivos.map((a, i) => {
+                    const url = urls && urls[i] && urls[i].signedUrl;
+                    return url
+                        ? `<li><a class="text-vigreen-800 underline" target="_blank" rel="noopener" href="${escapeHtml(url)}">${escapeHtml(a.name)}</a></li>`
+                        : `<li>${escapeHtml(a.name)}</li>`;
+                }).join('') + '</ul>';
+        }
+
+        async function salvarStatusAdmin() {
+            const d = state.selectedDenunciaAdmin;
+            if (!d) return;
+            const novo = document.getElementById('admin-status-select').value;
+            const { error } = await supabaseClient.from('denuncias').update({ status: novo }).eq('id', d.id);
+            if (error) {
+                showToast('Erro ao salvar status: ' + error.message, 'rose');
+                return;
+            }
+            d.status = novo;
+            renderAdminTable();
+            showToast('Status atualizado.');
         }
 
         // TOAST
@@ -727,25 +891,10 @@
             const iconClass = color === 'rose' ? 'fa-circle-xmark text-rose-400' : 'fa-circle-check text-vigold-500';
 
             toast.className = `fixed bottom-5 right-5 ${bgClass} text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold z-50 flex items-center gap-2 border`;
-            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mensagem}`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${escapeHtml(mensagem)}`;
             document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
+            setTimeout(() => { toast.remove(); }, 4000);
         }
-
-        // CRIAR SELETOR DE EMPRESA NA NAVBAR (se não existir)
-        window.addEventListener('load', () => {
-            const topbar = document.querySelector('[class*="bg-vigreen-950"]');
-            if (topbar && !document.getElementById('demo-company-selector')) {
-                const html = `
-                    <div class="bg-vigreen-950 text-slate-300 text-xs py-2 px-4 flex flex-wrap items-center justify-between border-b border-vigreen-900 gap-2">
-                        <span class="text-slate-400 text-[10px]">Selecione empresa:</span>
-                        <select id="demo-company-selector" onchange="simularAcessoEmpresa(this.value)" class="bg-vigreen-900 text-white text-xs border border-vigreen-700 rounded-lg px-2.5 py-1 outline-none focus:ring-1 focus:ring-vigold-500"></select>
-                    </div>
-                `;
-                topbar.parentElement.insertAdjacentHTML('beforebegin', html);
-                renderDemoCompanySelector();
-            }
-        });
     </script>
 
 </body>
