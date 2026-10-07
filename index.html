@@ -389,11 +389,11 @@
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 max-w-3xl mx-auto">
                 <div class="text-center max-w-lg mx-auto mb-8">
                     <h2 class="text-2xl font-extrabold text-vigreen-900 font-display">Acompanhar Andamento</h2>
-                    <p class="text-slate-600 text-sm mt-1">Digite o código de consulta de 8 caracteres recebido ao registrar a manifestação.</p>
+                    <p class="text-slate-600 text-sm mt-1">Digite o número de protocolo recebido ao registrar a manifestação.</p>
                 </div>
 
                 <form onsubmit="handleSearchProtocol(event)" class="flex flex-col sm:flex-row gap-3 mb-8">
-                    <input type="text" id="input-protocolo-busca" placeholder="Ex: OQC6NC2K" required maxlength="8" autocomplete="off" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
+                    <input type="text" id="input-protocolo-busca" placeholder="Ex: DEN-2026-N6RGCKLW" required maxlength="20" autocomplete="off" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
                     <button type="submit" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-7 py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-md">
                         <i class="fa-solid fa-magnifying-glass text-vigold-500"></i> Consultar
                     </button>
@@ -461,24 +461,15 @@
             </div>
             <div>
                 <h3 class="text-2xl font-extrabold text-vigreen-900 font-display">Manifestação Registrada!</h3>
-                <p class="text-xs text-slate-600 mt-2">Guarde AMBOS os códigos em um local seguro para consultar depois.</p>
+                <p class="text-xs text-slate-600 mt-2">Guarde este número em um local seguro. É com ele que você acompanha o andamento na aba <strong>Consultar</strong>.</p>
             </div>
 
-            <!-- PROTOCOLO -->
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Código de Protocolo:</div>
-                <div id="display-protocolo-gerado" class="text-xl font-mono font-bold text-vigreen-800 tracking-wider mb-2">DEN-00000</div>
+            <!-- PROTOCOLO (também usado para a consulta) -->
+            <div class="bg-vigold-50 p-4 rounded-2xl border border-vigold-200">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-vigold-700 mb-1">Número de Protocolo:</div>
+                <div id="display-protocolo-gerado" class="text-xl font-mono font-bold text-vigreen-800 tracking-wider mb-2">DEN-0000-00000000</div>
                 <button onclick="copiarProtocolo()" class="text-xs font-bold text-vigold-600 hover:text-vigold-700">
                     <i class="fa-solid fa-copy"></i> Copiar Protocolo
-                </button>
-            </div>
-
-            <!-- CÓDIGO DE CONSULTA -->
-            <div class="bg-vigold-50 p-4 rounded-2xl border border-vigold-200">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-vigold-700 mb-1">Código de Consulta:</div>
-                <div id="display-codigo-consulta" class="text-xl font-mono font-bold text-vigold-600 tracking-widest mb-2">ABC12345</div>
-                <button onclick="copiarCodigoConsulta()" class="text-xs font-bold text-vigold-600 hover:text-vigold-700">
-                    <i class="fa-solid fa-copy"></i> Copiar Código
                 </button>
             </div>
 
@@ -603,10 +594,9 @@
             return Array.from(bytes, b => caracteres[b % caracteres.length]).join('');
         }
 
-        function gerarProtocolo() {
-            const ano = new Date().getFullYear();
-            const numero = 10000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 90000);
-            return `DEN-${ano}-${numero}`;
+        // O protocolo carrega o código aleatório, então serve sozinho para a consulta.
+        function gerarProtocolo(codigo) {
+            return `DEN-${new Date().getFullYear()}-${codigo}`;
         }
 
         // ENVIAR ANEXOS PARA O STORAGE
@@ -654,14 +644,14 @@
             }
 
             const denunciaId = crypto.randomUUID();
-            const codigoConsulta = gerarCodigoUnico();
-            let protocolo;
+            let codigoConsulta, protocolo;
 
             botao.disabled = true;
             try {
-                // INSERIR NO SUPABASE (nova tentativa se o protocolo já existir)
+                // INSERIR NO SUPABASE (nova tentativa se o código já existir)
                 for (let tentativa = 0; tentativa < 3; tentativa++) {
-                    protocolo = gerarProtocolo();
+                    codigoConsulta = gerarCodigoUnico();
+                    protocolo = gerarProtocolo(codigoConsulta);
                     const { error } = await supabaseClient
                         .from('denuncias')
                         .insert({
@@ -686,7 +676,6 @@
 
                 // MOSTRAR SUCESSO
                 document.getElementById('display-protocolo-gerado').innerText = protocolo;
-                document.getElementById('display-codigo-consulta').innerText = codigoConsulta;
                 document.getElementById('modal-protocolo-sucesso').classList.remove('hidden');
 
                 // LIMPAR FORMULÁRIO
@@ -717,14 +706,6 @@
             });
         }
 
-        // COPIAR CÓDIGO DE CONSULTA
-        function copiarCodigoConsulta() {
-            const codigo = document.getElementById('display-codigo-consulta').innerText;
-            navigator.clipboard.writeText(codigo).then(() => {
-                showToast('Código de consulta copiado!');
-            });
-        }
-
         // FECHAR MODAL
         function fecharModalProtocolo() {
             document.getElementById('modal-protocolo-sucesso').classList.add('hidden');
@@ -733,7 +714,9 @@
         // CONSULTAR PELO CÓDIGO DE CONSULTA (RPC sem dados sensíveis)
         async function handleSearchProtocol(event) {
             event.preventDefault();
-            const codigo = document.getElementById('input-protocolo-busca').value.trim().toUpperCase();
+            // Aceita o protocolo completo (DEN-2026-XXXXXXXX) ou só o código final de 8 caracteres.
+            const digitado = document.getElementById('input-protocolo-busca').value.trim().toUpperCase();
+            const codigo = digitado.replace(/\s+/g, '').split('-').pop();
             const container = document.getElementById('resultado-protocolo');
 
             try {
@@ -745,7 +728,7 @@
                     container.innerHTML = `
                         <div class="text-center py-6 text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
                             <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
-                            <p class="font-bold text-sm">Código de consulta não encontrado.</p>
+                            <p class="font-bold text-sm">Protocolo não encontrado. Confira se digitou o número completo.</p>
                         </div>
                     `;
                     container.classList.remove('hidden');
