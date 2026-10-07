@@ -139,6 +139,14 @@
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
         const STATUS_OPCOES = ['Nova', 'Em análise', 'Em apuração', 'Concluída', 'Arquivada'];
+        const ETAPAS_STATUS = ['Nova', 'Em análise', 'Em apuração', 'Concluída'];
+        const STATUS_DESCRICOES = {
+            'Nova': { icone: 'fa-inbox', texto: 'Sua manifestação foi recebida e aguarda a análise inicial da equipe de compliance.' },
+            'Em análise': { icone: 'fa-magnifying-glass', texto: 'A equipe de compliance está avaliando as informações enviadas.' },
+            'Em apuração': { icone: 'fa-scale-balanced', texto: 'Os fatos relatados estão sendo apurados. Esta etapa pode levar mais tempo.' },
+            'Concluída': { icone: 'fa-circle-check', texto: 'A apuração foi concluída e as medidas cabíveis foram encaminhadas.' },
+            'Arquivada': { icone: 'fa-box-archive', texto: 'A manifestação foi arquivada, por exemplo por falta de elementos para apuração.' }
+        };
 
         let state = {
             currentEmpresaSlug: 'ergohealth',
@@ -744,19 +752,39 @@
                     return;
                 }
 
+                const statusInfo = STATUS_DESCRICOES[data.status] || { texto: 'Sua manifestação está sendo acompanhada pela equipe de compliance.', icone: 'fa-circle-info' };
+                const etapaAtual = ETAPAS_STATUS.indexOf(data.status);
+                const etapasHtml = data.status === 'Arquivada' ? '' : `
+                    <ol class="grid grid-cols-4 gap-2 text-[10px] sm:text-xs font-bold text-center">
+                        ${ETAPAS_STATUS.map((etapa, i) => {
+                            const feita = etapaAtual >= 0 && i <= etapaAtual;
+                            return `<li class="space-y-1.5">
+                                <div class="h-2 rounded-full ${feita ? 'bg-vigreen-800' : 'bg-slate-200'}"></div>
+                                <div class="${i === etapaAtual ? 'text-vigreen-900' : feita ? 'text-vigreen-700' : 'text-slate-400'}">${escapeHtml(etapa)}</div>
+                            </li>`;
+                        }).join('')}
+                    </ol>`;
+                const atualizado = data.updated_at || data.created_at;
+
                 container.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                            <div>
-                                <div class="text-[10px] font-extrabold text-slate-400 uppercase">Protocolo</div>
-                                <h3 class="text-xl font-bold text-vigreen-900 font-mono">${escapeHtml(data.protocolo)}</h3>
+                    <div class="space-y-5">
+                        <div class="bg-vigreen-50 border-2 border-vigreen-200 rounded-2xl p-5 space-y-2">
+                            <div class="text-[10px] font-extrabold text-vigreen-700 uppercase tracking-wider">Status atual</div>
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid ${statusInfo.icone} text-2xl text-vigold-500"></i>
+                                <h3 class="text-2xl font-extrabold text-vigreen-900 font-display">${escapeHtml(data.status)}</h3>
                             </div>
-                            <span class="px-3.5 py-1 text-xs font-bold rounded-full bg-vigreen-50 text-vigreen-800 border border-vigreen-200">${escapeHtml(data.status)}</span>
+                            <p class="text-sm text-slate-700">${statusInfo.texto}</p>
+                            <p class="text-xs text-slate-500">Última atualização: ${new Date(atualizado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</p>
                         </div>
-                        <p class="text-sm text-slate-600"><strong>Categoria:</strong> ${escapeHtml(data.categoria)}</p>
-                        <p class="text-sm text-slate-600"><strong>Gravidade:</strong> ${escapeHtml(data.gravidade)}</p>
-                        <p class="text-sm text-slate-600"><strong>Data:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
-                        ${data.total_arquivos > 0 ? `<p class="text-sm text-slate-600"><strong>Anexos:</strong> ${Number(data.total_arquivos)} arquivo(s)</p>` : ''}
+                        ${etapasHtml}
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
+                            <p><strong>Protocolo:</strong> <span class="font-mono">${escapeHtml(data.protocolo)}</span></p>
+                            <p><strong>Registrada em:</strong> ${new Date(data.created_at).toLocaleDateString('pt-BR')}</p>
+                            <p><strong>Categoria:</strong> ${escapeHtml(data.categoria)}</p>
+                            <p><strong>Gravidade:</strong> ${escapeHtml(data.gravidade)}</p>
+                            ${data.total_arquivos > 0 ? `<p><strong>Anexos:</strong> ${Number(data.total_arquivos)} arquivo(s)</p>` : ''}
+                        </div>
                     </div>
                 `;
                 container.classList.remove('hidden');
