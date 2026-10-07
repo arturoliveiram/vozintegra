@@ -8,6 +8,9 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Gerador de QR code (painel de gestão) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <!-- Tailwind CSS via CDN with fallback -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -149,8 +152,8 @@
         };
 
         let state = {
-            currentEmpresaSlug: 'ergohealth',
-            empresas: [],
+            empresa: null,
+            adminEmpresas: [],
             denuncias: [],
             selectedDenunciaAdmin: null,
             attachedFiles: [],
@@ -167,31 +170,31 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // CARREGAR EMPRESAS DO SUPABASE
-        async function carregarEmpresas() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('empresas')
-                    .select('*')
-                    .limit(100);
+        // EMPRESA DO LINK / QR CODE (?empresa=CÓDIGO)
+        const SITE_URL = 'https://vozintegra.vercel.app';
 
-                if (error) throw error;
+        function linkDaEmpresa(codigo) {
+            return `${SITE_URL}/?empresa=${encodeURIComponent(codigo)}`;
+        }
 
-                state.empresas = (data || []).filter(e => e.status !== 'Inativa');
+        async function buscarEmpresaPorCodigo(codigo) {
+            const { data, error } = await supabaseClient.rpc('empresa_por_codigo', { p_codigo: codigo });
+            if (error) throw error;
+            return (data && data[0]) || null;
+        }
 
-                if (state.empresas.length > 0) {
-                    const padrao = state.empresas.find(e => e.slug === state.currentEmpresaSlug);
-                    state.currentEmpresaSlug = (padrao || state.empresas[0]).slug;
-                } else {
-                    state.currentEmpresaSlug = null;
+        async function carregarEmpresaDoLink() {
+            const codigo = new URLSearchParams(window.location.search).get('empresa');
+            if (codigo) {
+                try {
+                    state.empresa = await buscarEmpresaPorCodigo(codigo);
+                    if (!state.empresa) showToast('Link de empresa inválido ou desativado. Digite o código da empresa.', 'rose');
+                } catch (error) {
+                    console.error('Erro ao buscar empresa:', error);
+                    showToast('Erro ao carregar a empresa. Tente novamente.', 'rose');
                 }
-
-                renderEmpresasSelect();
-                updateCurrentCompanyView();
-            } catch (error) {
-                console.error('Erro ao carregar empresas:', error);
-                showToast('Erro ao carregar empresas. Verifique Supabase.', 'rose');
             }
+            renderEmpresa();
         }
 
         // CARREGAR DENÚNCIAS (para admin autenticado)
@@ -214,7 +217,7 @@
 
         // INICIALIZAR
         window.addEventListener('load', async () => {
-            carregarEmpresas();
+            carregarEmpresaDoLink();
             const { data } = await supabaseClient.auth.getSession();
             state.adminSession = data.session;
             supabaseClient.auth.onAuthStateChange((_evento, sessao) => {
@@ -286,12 +289,20 @@
 
                 <form id="form-denuncia" onsubmit="handleReportSubmit(event)" class="space-y-6">
 
-                    <!-- SELEÇÃO DA EMPRESA -->
+                    <!-- EMPRESA (definida pelo QR code / link, ou pelo código digitado) -->
                     <div>
-                        <label for="empresa-select" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Empresa <span class="text-rose-500">*</span></label>
-                        <select id="empresa-select" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
-                            <option value="">Selecione sua empresa...</option>
-                        </select>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Empresa <span class="text-rose-500">*</span></label>
+                        <div id="empresa-travada" class="hidden flex items-center gap-3 bg-vigreen-50 border border-vigreen-200 rounded-xl px-4 py-3 text-sm">
+                            <i class="fa-solid fa-lock text-vigold-500"></i>
+                            <span id="empresa-travada-nome" class="font-bold text-vigreen-900"></span>
+                        </div>
+                        <div id="empresa-codigo-box" class="hidden space-y-2">
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="text" id="empresa-codigo" maxlength="20" autocomplete="off" placeholder="Código da empresa (ex: A1B2C3D4E5)" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm font-mono uppercase focus:ring-2 focus:ring-vigreen-800 outline-none">
+                                <button type="button" onclick="confirmarCodigoEmpresa()" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-6 py-3 rounded-xl text-sm">Confirmar</button>
+                            </div>
+                            <p class="text-xs text-slate-500">Use o QR code ou o código informado pela sua empresa.</p>
+                        </div>
                     </div>
 
                     <!-- TIPO DE IDENTIFICAÇÃO -->
@@ -422,12 +433,17 @@
 
             <!-- PAINEL -->
             <div id="admin-painel" class="hidden space-y-4">
-                <div class="flex items-center justify-between">
-                    <span id="admin-usuario" class="text-xs text-slate-500"></span>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                        <button id="btn-admin-denuncias" onclick="switchAdminSecao('denuncias')" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-vigreen-900 shadow-sm">Denúncias</button>
+                        <button id="btn-admin-empresas" onclick="switchAdminSecao('empresas')" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500">Empresas e QR codes</button>
+                    </div>
+                    <span id="admin-usuario" class="text-xs text-slate-500 ml-auto"></span>
                     <button onclick="handleAdminLogout()" class="text-xs font-bold text-vigreen-800 hover:text-vigreen-900">
                         <i class="fa-solid fa-right-from-bracket mr-1"></i> Sair
                     </button>
                 </div>
+                <div id="admin-secao-denuncias" class="space-y-4">
                 <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
@@ -448,6 +464,18 @@
                     </div>
                 </div>
                 <div id="admin-detalhe" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4"></div>
+                </div>
+
+                <!-- EMPRESAS E QR CODES -->
+                <div id="admin-secao-empresas" class="hidden space-y-4">
+                    <form onsubmit="handleNovaEmpresa(event)" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="nova-empresa-nome" required maxlength="120" placeholder="Nome da nova empresa cliente" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-vigreen-800 outline-none">
+                        <button type="submit" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-6 py-3 rounded-xl text-sm">
+                            <i class="fa-solid fa-plus text-vigold-500 mr-1.5"></i> Cadastrar e gerar QR code
+                        </button>
+                    </form>
+                    <div id="admin-empresas-lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
             </div>
         </section>
 
@@ -553,29 +581,27 @@
             }
         }
 
-        // POPULAR SELECT DE EMPRESAS NO FORMULÁRIO
-        function renderEmpresasSelect() {
-            const select = document.getElementById('empresa-select');
-            if (!select) return;
-
-            select.innerHTML = '<option value="">Selecione sua empresa...</option>';
-            state.empresas.forEach(emp => {
-                const sel = emp.slug === state.currentEmpresaSlug ? 'selected' : '';
-                select.innerHTML += `<option value="${escapeHtml(emp.slug)}" ${sel}>${escapeHtml(emp.nome)}</option>`;
-            });
+        // MOSTRAR EMPRESA TRAVADA OU PEDIR O CÓDIGO
+        function renderEmpresa() {
+            const travada = !!state.empresa;
+            document.getElementById('empresa-travada').classList.toggle('hidden', !travada);
+            document.getElementById('empresa-codigo-box').classList.toggle('hidden', travada);
+            document.getElementById('empresa-travada-nome').innerText = travada ? state.empresa.nome : '';
         }
 
-        // MOSTRAR AVISO QUANDO NÃO HÁ EMPRESA ATIVA
-        function updateCurrentCompanyView() {
-            const formContainer = document.getElementById('container-formulario-ativo');
-            const inativaBanner = document.getElementById('banner-empresa-inativa');
-
-            if (state.empresas.length === 0) {
-                formContainer.classList.add('hidden');
-                inativaBanner.classList.remove('hidden');
-            } else {
-                inativaBanner.classList.add('hidden');
-                formContainer.classList.remove('hidden');
+        async function confirmarCodigoEmpresa() {
+            const codigo = document.getElementById('empresa-codigo').value.trim();
+            if (!codigo) return;
+            try {
+                state.empresa = await buscarEmpresaPorCodigo(codigo);
+                if (!state.empresa) {
+                    showToast('Código de empresa não encontrado.', 'rose');
+                    return;
+                }
+                renderEmpresa();
+            } catch (error) {
+                console.error('Erro ao buscar empresa:', error);
+                showToast('Erro ao verificar o código. Tente novamente.', 'rose');
             }
         }
 
@@ -619,11 +645,10 @@
         async function handleReportSubmit(event) {
             event.preventDefault();
 
-            const empresaSlug = document.getElementById('empresa-select').value;
-            const empresa = state.empresas.find(e => e.slug === empresaSlug);
+            const empresa = state.empresa;
 
             if (!empresa) {
-                showToast('Selecione uma empresa válida', 'rose');
+                showToast('Informe o código da sua empresa antes de enviar.', 'rose');
                 return;
             }
 
@@ -683,7 +708,7 @@
                 toggleIdentificacaoFields(false);
                 state.attachedFiles = [];
                 document.getElementById('arquivos-lista').innerHTML = '';
-                renderEmpresasSelect();
+                renderEmpresa();
 
                 if (falhas > 0) {
                     showToast(`Manifestação registrada, mas ${falhas} anexo(s) não foram enviados.`, 'rose');
@@ -786,6 +811,118 @@
                 document.getElementById('admin-usuario').innerText = state.adminSession.user.email || '';
                 carregarDenuncias();
             }
+        }
+
+        // ADMIN: ALTERNAR ENTRE DENÚNCIAS E EMPRESAS
+        function switchAdminSecao(secao) {
+            const ativo = 'px-4 py-2 rounded-lg text-xs font-bold bg-white text-vigreen-900 shadow-sm';
+            const inativo = 'px-4 py-2 rounded-lg text-xs font-bold text-slate-500';
+            document.getElementById('admin-secao-denuncias').classList.toggle('hidden', secao !== 'denuncias');
+            document.getElementById('admin-secao-empresas').classList.toggle('hidden', secao !== 'empresas');
+            document.getElementById('btn-admin-denuncias').className = secao === 'denuncias' ? ativo : inativo;
+            document.getElementById('btn-admin-empresas').className = secao === 'empresas' ? ativo : inativo;
+            if (secao === 'empresas') carregarEmpresasAdmin();
+        }
+
+        // ADMIN: EMPRESAS E QR CODES
+        async function carregarEmpresasAdmin() {
+            const { data, error } = await supabaseClient
+                .from('empresas')
+                .select('id, slug, nome, status, codigo_acesso, created_at')
+                .order('created_at', { ascending: false });
+            if (error) {
+                showToast('Erro ao carregar empresas: ' + error.message, 'rose');
+                return;
+            }
+            state.adminEmpresas = data || [];
+            renderEmpresasAdmin();
+        }
+
+        function renderEmpresasAdmin() {
+            const lista = document.getElementById('admin-empresas-lista');
+            if (state.adminEmpresas.length === 0) {
+                lista.innerHTML = '<p class="text-sm text-slate-400">Nenhuma empresa cadastrada.</p>';
+                return;
+            }
+            lista.innerHTML = state.adminEmpresas.map(e => {
+                const ativa = e.status !== 'Inativa';
+                const link = linkDaEmpresa(e.codigo_acesso || '');
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex gap-4 ${ativa ? '' : 'opacity-60'}">
+                    <div id="qr-${escapeHtml(e.id)}" class="shrink-0 w-32 h-32 bg-white"></div>
+                    <div class="min-w-0 flex-1 space-y-2 text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <h4 class="text-sm font-bold text-vigreen-900 truncate">${escapeHtml(e.nome)}</h4>
+                            <span class="px-2 py-0.5 rounded-full font-bold ${ativa ? 'bg-vigreen-50 text-vigreen-800' : 'bg-slate-100 text-slate-500'}">${ativa ? 'Ativa' : 'Inativa'}</span>
+                        </div>
+                        <p class="text-slate-500">Código: <span class="font-mono font-bold text-slate-700">${escapeHtml(e.codigo_acesso || '-')}</span></p>
+                        <p class="text-slate-500 break-all">${escapeHtml(link)}</p>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <button onclick="copiarLinkEmpresa('${escapeHtml(e.id)}')" class="font-bold text-vigold-600 hover:text-vigold-700"><i class="fa-solid fa-copy"></i> Copiar link</button>
+                            <button onclick="baixarQrEmpresa('${escapeHtml(e.id)}')" class="font-bold text-vigold-600 hover:text-vigold-700"><i class="fa-solid fa-download"></i> Baixar QR</button>
+                            <button onclick="alternarStatusEmpresa('${escapeHtml(e.id)}')" class="font-bold text-slate-500 hover:text-slate-700">${ativa ? 'Desativar' : 'Ativar'}</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            state.adminEmpresas.forEach(e => {
+                const alvo = document.getElementById(`qr-${e.id}`);
+                if (!alvo || !e.codigo_acesso || typeof QRCode === 'undefined') return;
+                new QRCode(alvo, { text: linkDaEmpresa(e.codigo_acesso), width: 512, height: 512, colorDark: '#1C4428', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+                alvo.querySelectorAll('img, canvas').forEach(el => { el.style.width = '100%'; el.style.height = '100%'; });
+            });
+        }
+
+        function slugDe(nome) {
+            return nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+        }
+
+        async function handleNovaEmpresa(event) {
+            event.preventDefault();
+            const campo = document.getElementById('nova-empresa-nome');
+            const nome = campo.value.trim();
+            if (!nome) return;
+            const base = slugDe(nome) || 'empresa';
+            const slug = state.adminEmpresas.some(e => e.slug === base) ? `${base}-${Date.now().toString(36)}` : base;
+            const { error } = await supabaseClient.from('empresas').insert({ nome, slug, status: 'Ativa' });
+            if (error) {
+                showToast('Erro ao cadastrar empresa: ' + error.message, 'rose');
+                return;
+            }
+            campo.value = '';
+            showToast('Empresa cadastrada. O QR code já está disponível.');
+            carregarEmpresasAdmin();
+        }
+
+        function copiarLinkEmpresa(id) {
+            const e = state.adminEmpresas.find(x => x.id === id);
+            if (!e) return;
+            navigator.clipboard.writeText(linkDaEmpresa(e.codigo_acesso)).then(() => showToast('Link copiado!'));
+        }
+
+        function baixarQrEmpresa(id) {
+            const e = state.adminEmpresas.find(x => x.id === id);
+            const canvas = document.querySelector(`#qr-${id} canvas`);
+            if (!e || !canvas) return;
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `qrcode-${e.slug}.png`;
+            a.click();
+        }
+
+        async function alternarStatusEmpresa(id) {
+            const e = state.adminEmpresas.find(x => x.id === id);
+            if (!e) return;
+            const novo = e.status === 'Inativa' ? 'Ativa' : 'Inativa';
+            const { error } = await supabaseClient.from('empresas').update({ status: novo }).eq('id', id);
+            if (error) {
+                showToast('Erro ao alterar status: ' + error.message, 'rose');
+                return;
+            }
+            e.status = novo;
+            renderEmpresasAdmin();
         }
 
         async function handleAdminLogin(event) {

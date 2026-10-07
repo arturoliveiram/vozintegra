@@ -6,6 +6,7 @@ Rode no **SQL Editor** do Supabase, nesta ordem (cada arquivo pode ser executado
 1. `migrations/20261006000001_rls_e_consulta.sql` ativa RLS, cria a tabela `admins` e a função `consultar_denuncia`.
 2. `migrations/20261006000002_storage_anexos.sql` cria o bucket privado `anexos` (10 MB, PDF/imagens/Word) e suas políticas.
 3. `migrations/20261006000003_empresa_ergohealth.sql` cadastra a ErgoHealth Ltda e desativa a empresa de demonstração.
+5. `migrations/20261007000004_qrcode_empresas.sql` cria o código secreto de cada empresa (QR code) e esconde a lista de empresas do público.
 4. Opcional: `limpar_dados_teste.sql` apaga as denúncias de teste (confira antes com o SELECT do arquivo).
 
 ## Criar um administrador
