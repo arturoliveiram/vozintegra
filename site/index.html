@@ -593,13 +593,35 @@
 
         botao.disabled = true;
         botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
-        try {
+        // Grava no Supabase e envia por e-mail (FormSubmit) ao mesmo tempo; basta um dos dois funcionar
+        const gravar = (async () => {
             if (!supabaseClient) throw new Error('Supabase indisponível');
             const { error } = await supabaseClient.from('contatos_site').insert(dados);
             if (error) throw error;
+        })();
+        const enviarEmail = fetch('https://formsubmit.co/ajax/contato@vozintegra.com.br', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: 'Nova solicitação de proposta - ' + (dados.empresa || dados.nome),
+                _template: 'table',
+                _captcha: 'false',
+                _replyto: dados.email,
+                Nome: dados.nome,
+                Empresa: dados.empresa || '-',
+                'E-mail': dados.email,
+                Telefone: dados.telefone,
+                Colaboradores: dados.colaboradores || '-',
+                Mensagem: dados.mensagem || '-'
+            })
+        }).then(r => { if (!r.ok) throw new Error('FormSubmit ' + r.status); });
+
+        const resultados = await Promise.allSettled([gravar, enviarEmail]);
+        resultados.filter(r => r.status === 'rejected').forEach(r => console.error('Falha ao enviar contato:', r.reason));
+        try {
+            if (resultados.every(r => r.status === 'rejected')) throw new Error('Nenhum envio funcionou');
             mostrarSucesso();
         } catch (e) {
-            console.error('Falha ao gravar contato:', e);
             const corpo = [
                 `Nome: ${dados.nome}`,
                 `Empresa: ${dados.empresa || '-'}`,
