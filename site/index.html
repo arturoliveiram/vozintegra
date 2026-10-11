@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voz Íntegra | Canal de Denúncias Externo e Compliance para Empresas</title>
+    <meta name="description" content="Canal de denúncias externo, independente e confidencial. Adequação à Lei nº 14.457/2022, LGPD e NR-1 (riscos psicossociais), com gestão das manifestações e relatórios gerenciais.">
+    <link rel="canonical" href="https://vozintegra.com.br/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Voz Íntegra | Canal de Denúncias e Compliance">
+    <meta property="og:description" content="Canal externo, independente e confidencial para sua empresa cumprir a Lei nº 14.457/2022, a LGPD e a NR-1.">
+    <meta property="og:url" content="https://vozintegra.com.br/">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="theme-color" content="#1C4428">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 140'%3E%3Cpath d='M12 18 L48 18 L76 96 L104 18 L138 18 L88 128 L62 128 Z' fill='%231C4428'/%3E%3Crect x='114' y='52' width='24' height='76' rx='4' fill='%23D98B1D'/%3E%3Ccircle cx='126' cy='28' r='16' fill='%23D98B1D'/%3E%3C/svg%3E">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        vigreen: { 50: '#f2f7f4', 100: '#e3ede6', 200: '#c5dacb', 300: '#9dc0a7', 500: '#2f7445', 700: '#215431', 800: '#1C4428', 900: '#122c1b', 950: '#0b1d12' },
+                        vigold: { 50: '#fdf8f0', 100: '#faefdc', 200: '#f4dcaf', 300: '#ecc37a', 500: '#D98B1D', 600: '#c27915', 700: '#a1600f' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #ffffff; color: #0f172a; }
+        .font-display { font-family: 'Outfit', sans-serif; }
+        .hero-bg {
+            background:
+                radial-gradient(900px 500px at 85% -10%, rgba(217,139,29,0.22), transparent 60%),
+                radial-gradient(700px 500px at -10% 110%, rgba(47,116,69,0.45), transparent 60%),
+                linear-gradient(160deg, #0b1d12 0%, #122c1b 45%, #1C4428 100%);
+        }
+        .grid-pattern {
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+        }
+        .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        details summary::-webkit-details-marker { display: none; }
+        details[open] .faq-icon { transform: rotate(45deg); }
+        #site-header.scrolled { background: rgba(11,29,18,0.92); backdrop-filter: blur(10px); box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- CABEÇALHO -->
+<header id="site-header" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <a href="#inicio" class="flex items-center gap-2.5 bg-white px-3 py-2 rounded-xl shadow-md" aria-label="Voz Íntegra - início">
+                <svg class="h-8 w-auto" viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 18 L48 18 L76 96 L104 18 L138 18 L88 128 L62 128 Z" fill="#1C4428"/>
+                    <rect x="114" y="52" width="24" height="76" rx="4" fill="#D98B1D"/>
+                    <circle cx="126" cy="28" r="16" fill="#D98B1D"/>
+                    <path d="M122 28 V25 C122 22.8 123.8 21 126 21 C128.2 21 130 22.8 130 25 V28 H131 C132.1 28 133 28.9 133 30 V34 C133 35.1 132.1 36 131 36 H121 C119.9 36 119 35.1 119 34 V30 C119 28.9 119.9 28 121 28 H122 Z M124 28 H128 V25 C128 23.9 127.1 23 126 23 C124.9 23 124 23.9 124 25 V28 Z" fill="#FFFFFF"/>
+                </svg>
+                <span class="flex flex-col">
+                    <span class="font-display font-extrabold text-lg leading-none tracking-tight"><span class="text-vigreen-800">Voz</span> <span class="text-vigold-500">Íntegra</span></span>
+                    <span class="text-[9px] font-bold tracking-widest text-slate-400 uppercase mt-0.5">Canal de Ética</span>
+                </span>
+            </a>
+
+            <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-200">
+                <a href="#solucao" class="hover:text-vigold-300 transition">Solução</a>
+                <a href="#como-funciona" class="hover:text-vigold-300 transition">Como funciona</a>
+                <a href="#legislacao" class="hover:text-vigold-300 transition">Legislação</a>
+                <a href="#sobre" class="hover:text-vigold-300 transition">Sobre</a>
+                <a href="#faq" class="hover:text-vigold-300 transition">Dúvidas</a>
+            </nav>
+
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="/canal" class="text-sm font-semibold text-white border border-white/25 hover:border-vigold-300 hover:text-vigold-300 px-4 py-2.5 rounded-xl transition">
+                    <i class="fa-solid fa-shield-halved mr-1.5"></i>Fazer uma denúncia
+                </a>
+                <a href="#contato" class="text-sm font-bold bg-vigold-500 hover:bg-vigold-600 text-vigreen-950 px-5 py-2.5 rounded-xl shadow-lg shadow-vigold-500/20 transition">
+                    Solicitar proposta
+                </a>
+            </div>
+
+            <button id="menu-btn" class="lg:hidden text-white text-2xl p-2" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu-mobile">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="menu-mobile" class="hidden lg:hidden bg-vigreen-950/95 backdrop-blur border-t border-white/10">
+        <nav class="px-4 py-4 flex flex-col gap-1 text-slate-100 font-medium">
+            <a href="#solucao" class="py-3 border-b border-white/5">Solução</a>
+            <a href="#como-funciona" class="py-3 border-b border-white/5">Como funciona</a>
+            <a href="#legislacao" class="py-3 border-b border-white/5">Legislação</a>
+            <a href="#sobre" class="py-3 border-b border-white/5">Sobre</a>
+            <a href="#faq" class="py-3 border-b border-white/5">Dúvidas</a>
+            <a href="/canal" class="mt-3 text-center font-semibold border border-white/25 py-3 rounded-xl"><i class="fa-solid fa-shield-halved mr-1.5"></i>Fazer uma denúncia</a>
+            <a href="#contato" class="mt-2 text-center font-bold bg-vigold-500 text-vigreen-950 py-3 rounded-xl">Solicitar proposta</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section id="inicio" class="hero-bg relative overflow-hidden text-white">
+    <div class="absolute inset-0 grid-pattern" aria-hidden="true"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 lg:pt-44 lg:pb-28 grid lg:grid-cols-2 gap-14 items-center">
+        <div>
+            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-vigold-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-vigold-500"></span> Externo · Independente · Confidencial
+            </span>
+            <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mt-6 tracking-tight">
+                Canal de denúncias que protege <span class="text-vigold-500">pessoas</span> e a sua <span class="text-vigold-500">empresa</span>.
+            </h1>
+            <p class="mt-6 text-lg text-slate-300 max-w-xl leading-relaxed">
+                Recebemos, analisamos e encaminhamos as manifestações dos seus colaboradores com sigilo e isenção, para sua empresa cumprir a
+                <strong class="text-white">Lei nº 14.457/2022</strong>, a <strong class="text-white">LGPD</strong> e a <strong class="text-white">NR-1</strong> sem sobrecarregar o RH.
+            </p>
+            <div class="mt-9 flex flex-col sm:flex-row gap-3">
+                <a href="#contato" class="inline-flex items-center justify-center gap-2 bg-vigold-500 hover:bg-vigold-600 text-vigreen-950 font-bold px-7 py-4 rounded-xl shadow-xl shadow-vigold-500/25 transition">
+                    Solicitar proposta <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <a href="#como-funciona" class="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 font-semibold px-7 py-4 rounded-xl transition">
+                    Ver como funciona
+                </a>
+            </div>
+            <ul class="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-300">
+                <li><i class="fa-solid fa-check text-vigold-500 mr-2"></i>Denúncia anônima</li>
+                <li><i class="fa-solid fa-check text-vigold-500 mr-2"></i>Atendimento em todo o Brasil</li>
+                <li><i class="fa-solid fa-check text-vigold-500 mr-2"></i>Implantação completa</li>
+            </ul>
+        </div>
+
+        <!-- Ilustração: cartão do canal -->
+        <div class="relative hidden md:block" aria-hidden="true">
+            <div class="absolute -inset-6 bg-vigold-500/10 blur-3xl rounded-full"></div>
+            <div class="relative bg-white text-slate-800 rounded-3xl shadow-2xl p-7 max-w-md ml-auto">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-vigreen-50 text-vigreen-800 border border-vigreen-200">
+                        <i class="fa-solid fa-lock text-vigold-500"></i> Canal protegido
+                    </span>
+                    <span class="text-xs font-mono text-slate-400">DEN-2026-00142</span>
+                </div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Manifestação recebida</h3>
+                <p class="text-sm text-slate-500 mt-1">Sua identidade está protegida.</p>
+                <ol class="mt-6 space-y-4">
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-vigreen-800 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                        <span class="text-sm font-semibold">Recebida</span><span class="ml-auto text-xs text-slate-400">09:14</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-vigreen-800 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                        <span class="text-sm font-semibold">Triagem e classificação</span><span class="ml-auto text-xs text-slate-400">10:02</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-vigold-500 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <span class="text-sm font-semibold">Em análise técnica</span><span class="ml-auto text-xs font-bold text-vigold-600">agora</span>
+                    </li>
+                    <li class="flex items-center gap-3 opacity-50">
+                        <span class="w-8 h-8 rounded-full border-2 border-slate-200"></span>
+                        <span class="text-sm font-semibold">Encaminhamento à empresa</span>
+                    </li>
+                </ol>
+                <div class="mt-6 pt-5 border-t border-slate-100 flex items-center gap-3 text-xs text-slate-500">
+                    <i class="fa-solid fa-user-secret text-lg text-vigreen-700"></i>
+                    Acompanhe pelo protocolo, sem se identificar.
+                </div>
+            </div>
+            <div class="absolute -bottom-12 left-0 bg-vigreen-950 border border-white/10 rounded-2xl px-5 py-4 shadow-xl flex items-center gap-3">
+                <i class="fa-solid fa-qrcode text-2xl text-vigold-500"></i>
+                <div class="text-sm"><div class="font-bold">QR code exclusivo</div><div class="text-slate-400 text-xs">para cada empresa</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAIXA DE CONFORMIDADE -->
+<section class="bg-vigreen-50 border-b border-vigreen-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div><div class="font-display font-extrabold text-vigreen-800 text-lg">Lei 14.457/2022</div><div class="text-xs text-slate-500 mt-0.5">Programa Emprega + Mulheres</div></div>
+        <div><div class="font-display font-extrabold text-vigreen-800 text-lg">LGPD</div><div class="text-xs text-slate-500 mt-0.5">Lei nº 13.709/2018</div></div>
+        <div><div class="font-display font-extrabold text-vigreen-800 text-lg">NR-1</div><div class="text-xs text-slate-500 mt-0.5">Riscos psicossociais</div></div>
+        <div><div class="font-display font-extrabold text-vigreen-800 text-lg">Compliance</div><div class="text-xs text-slate-500 mt-0.5">Boas práticas de integridade</div></div>
+    </div>
+</section>
+
+<!-- POR QUE -->
+<section id="solucao" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Por que a Voz Íntegra</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Um canal que os colaboradores confiam em usar.</h2>
+            <p class="text-slate-600 mt-4 text-lg">Um canal só funciona quando quem denuncia se sente seguro. Por isso a gestão é feita por profissionais externos, fora da hierarquia da sua empresa.</p>
+        </div>
+
+        <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-user-secret"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Anonimato garantido</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">O colaborador pode denunciar sem se identificar e acompanhar o caso pelo número de protocolo, com a identidade protegida em todas as etapas.</p>
+            </div>
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-lock"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Confidencialidade</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">Acesso restrito às informações, dados protegidos e anexos guardados em ambiente privado.</p>
+            </div>
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-scale-balanced"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Gestão independente</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">Recebimento, triagem e acompanhamento feitos por profissionais externos, sem conflito de interesse com a empresa.</p>
+            </div>
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Compliance e LGPD</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">Processos alinhados à Lei nº 14.457/2022, à LGPD e às boas práticas de integridade corporativa.</p>
+            </div>
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-chart-line"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Relatórios gerenciais</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">Indicadores, estatísticas e recomendações para a liderança agir sobre os riscos antes que virem passivo.</p>
+            </div>
+            <div class="reveal group p-7 rounded-2xl border border-slate-200 hover:border-vigreen-200 hover:shadow-xl hover:shadow-vigreen-900/5 transition bg-white">
+                <div class="w-12 h-12 rounded-xl bg-vigreen-800 text-vigold-500 flex items-center justify-center text-xl"><i class="fa-solid fa-tower-broadcast"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-5">Atendimento multicanal</h3>
+                <p class="text-slate-600 mt-2 text-sm leading-relaxed">Formulário online, QR code, e-mail exclusivo e WhatsApp: o colaborador escolhe o meio mais confortável.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona" class="py-24 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Como funciona</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Da denúncia ao encerramento, tudo registrado.</h2>
+            <p class="text-slate-600 mt-4 text-lg">Um fluxo claro e rastreável, pronto para auditorias e fiscalizações.</p>
+        </div>
+
+        <ol class="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigreen-800 text-white font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigreen-100">1</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Recebimento</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">A manifestação chega por canais seguros e recebe um protocolo para acompanhamento.</p>
+            </li>
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigreen-800 text-white font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigreen-100">2</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Triagem e classificação</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">Avaliamos a natureza, a gravidade e a urgência de cada relato.</p>
+            </li>
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigreen-800 text-white font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigreen-100">3</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Análise técnica</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">Avaliação preliminar da consistência das informações e das evidências apresentadas.</p>
+            </li>
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigold-500 text-vigreen-950 font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigold-100">4</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Encaminhamento controlado</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">As informações vão somente para as pessoas que a empresa designar, evitando exposição indevida.</p>
+            </li>
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigold-500 text-vigreen-950 font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigold-100">5</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Relatórios gerenciais</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">Indicadores, painéis e recomendações estratégicas para a gestão.</p>
+            </li>
+            <li class="reveal relative pl-16">
+                <span class="absolute left-0 top-0 w-12 h-12 rounded-full bg-vigold-500 text-vigreen-950 font-display font-bold text-lg flex items-center justify-center ring-8 ring-vigold-100">6</span>
+                <h3 class="font-display font-bold text-lg text-vigreen-900">Encerramento e monitoramento</h3>
+                <p class="text-slate-600 text-sm mt-1.5 leading-relaxed">Acompanhamento até a conclusão, com registros guardados para auditorias.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<!-- LEGISLAÇÃO -->
+<section id="legislacao" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-5 gap-12 items-start">
+        <div class="lg:col-span-2 reveal lg:sticky lg:top-28">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Legislação</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Ter um canal de denúncias não é mais opcional.</h2>
+            <p class="text-slate-600 mt-4 text-lg">Empresas com CIPA precisam de procedimentos formais para receber e tratar denúncias de assédio e violência, garantindo o anonimato de quem denuncia.</p>
+            <a href="#contato" class="inline-flex items-center gap-2 mt-8 font-bold text-vigreen-800 hover:text-vigold-600 transition">
+                Fale com um especialista <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="lg:col-span-3 space-y-5">
+            <article class="reveal p-7 rounded-2xl bg-vigreen-900 text-white">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-gavel text-vigold-500 text-xl"></i><h3 class="font-display font-bold text-xl">Lei nº 14.457/2022</h3></div>
+                <p class="text-slate-300 mt-3 text-sm leading-relaxed">Empresas com CIPA devem adotar procedimentos para recebimento, acompanhamento e apuração de denúncias, assegurando o anonimato do denunciante, além de ações de capacitação e prevenção ao assédio.</p>
+            </article>
+            <article class="reveal p-7 rounded-2xl border border-slate-200 bg-white">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-list-check text-vigreen-700 text-xl"></i><h3 class="font-display font-bold text-xl text-vigreen-900">Tratamento das manifestações</h3></div>
+                <p class="text-slate-600 mt-3 text-sm leading-relaxed">Não basta receber: é preciso ter um procedimento de análise, encaminhamento e acompanhamento, com rastreabilidade de cada etapa.</p>
+            </article>
+            <article class="reveal p-7 rounded-2xl border border-slate-200 bg-white">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-brain text-vigreen-700 text-xl"></i><h3 class="font-display font-bold text-xl text-vigreen-900">NR-1 e riscos psicossociais</h3></div>
+                <p class="text-slate-600 mt-3 text-sm leading-relaxed">O canal pode compor o plano de ação do Gerenciamento de Riscos Ocupacionais, ajudando a identificar e tratar riscos psicossociais no ambiente de trabalho.</p>
+            </article>
+            <article class="reveal p-7 rounded-2xl border border-slate-200 bg-white">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-database text-vigreen-700 text-xl"></i><h3 class="font-display font-bold text-xl text-vigreen-900">LGPD</h3></div>
+                <p class="text-slate-600 mt-3 text-sm leading-relaxed">Os dados pessoais das manifestações são tratados com finalidade definida, acesso restrito e medidas de segurança, conforme a Lei nº 13.709/2018.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- O QUE ESTÁ INCLUÍDO -->
+<section class="py-24 bg-vigreen-950 text-white relative overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-60" aria-hidden="true"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-300">A solução completa</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl mt-3 tracking-tight">Cuidamos de tudo, da implantação à cultura.</h2>
+        </div>
+        <div class="mt-14 grid lg:grid-cols-3 gap-6">
+            <div class="reveal p-8 rounded-3xl bg-white/5 border border-white/10">
+                <div class="text-vigold-500 text-3xl"><i class="fa-solid fa-rocket"></i></div>
+                <h3 class="font-display font-bold text-2xl mt-5">Implantação</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300">
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Apoio na política e nos documentos do canal</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Materiais de lançamento e divulgação interna</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>QR code personalizado da sua empresa</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Formulário web, e-mail e WhatsApp dedicados</li>
+                </ul>
+            </div>
+            <div class="reveal p-8 rounded-3xl bg-vigold-500 text-vigreen-950 shadow-2xl shadow-vigold-500/20 lg:-translate-y-4">
+                <div class="text-3xl"><i class="fa-solid fa-clipboard-check"></i></div>
+                <h3 class="font-display font-bold text-2xl mt-5">Gestão</h3>
+                <ul class="mt-5 space-y-3 text-sm font-medium">
+                    <li class="flex gap-3"><i class="fa-solid fa-check mt-1"></i>Recebimento, triagem, análise e encaminhamento</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check mt-1"></i>Pareceres técnicos e acompanhamento dos casos</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check mt-1"></i>Relatórios gerenciais periódicos</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check mt-1"></i>Suporte de advogado trabalhista e profissional de compliance</li>
+                </ul>
+            </div>
+            <div class="reveal p-8 rounded-3xl bg-white/5 border border-white/10">
+                <div class="text-vigold-500 text-3xl"><i class="fa-solid fa-people-group"></i></div>
+                <h3 class="font-display font-bold text-2xl mt-5">Cultura organizacional</h3>
+                <ul class="mt-5 space-y-3 text-sm text-slate-300">
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Treinamento de lideranças sobre prevenção ao assédio</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Conduta ética e responsabilidades legais</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Palestras e campanhas de conscientização</li>
+                    <li class="flex gap-3"><i class="fa-solid fa-check text-vigold-500 mt-1"></i>Suporte contínuo durante todo o contrato</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SOBRE -->
+<section id="sobre" class="py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
+        <div class="reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Sobre nós</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Transparência que fortalece a cultura da sua empresa.</h2>
+            <p class="text-slate-600 mt-5 text-lg leading-relaxed">A Voz Íntegra oferece canais de denúncias externos e independentes para organizações de todo o Brasil. Nosso propósito é dar voz a quem precisa ser ouvido, com segurança, e ajudar as empresas a prevenir irregularidades, gerir riscos psicossociais e construir ambientes de trabalho mais éticos.</p>
+        </div>
+        <div class="reveal grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div class="p-5 rounded-2xl bg-vigreen-50 border border-vigreen-100"><i class="fa-solid fa-handshake text-vigreen-700 text-xl"></i><div class="font-display font-bold text-vigreen-900 mt-3">Integridade</div></div>
+            <div class="p-5 rounded-2xl bg-vigreen-50 border border-vigreen-100"><i class="fa-solid fa-scale-balanced text-vigreen-700 text-xl"></i><div class="font-display font-bold text-vigreen-900 mt-3">Independência</div></div>
+            <div class="p-5 rounded-2xl bg-vigreen-50 border border-vigreen-100"><i class="fa-solid fa-user-lock text-vigreen-700 text-xl"></i><div class="font-display font-bold text-vigreen-900 mt-3">Confidencialidade</div></div>
+            <div class="p-5 rounded-2xl bg-vigold-50 border border-vigold-100"><i class="fa-solid fa-star text-vigold-600 text-xl"></i><div class="font-display font-bold text-vigreen-900 mt-3">Excelência</div></div>
+            <div class="p-5 rounded-2xl bg-vigold-50 border border-vigold-100"><i class="fa-solid fa-heart text-vigold-600 text-xl"></i><div class="font-display font-bold text-vigreen-900 mt-3">Compromisso</div></div>
+            <div class="p-5 rounded-2xl bg-vigreen-800 text-white"><i class="fa-solid fa-map-location-dot text-vigold-500 text-xl"></i><div class="font-display font-bold mt-3">Todo o Brasil</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- FAÇA UMA DENÚNCIA -->
+<section class="px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto reveal rounded-3xl bg-gradient-to-br from-vigreen-800 to-vigreen-950 text-white p-8 sm:p-12 flex flex-col md:flex-row items-start md:items-center gap-8 justify-between">
+        <div class="max-w-2xl">
+            <h2 class="font-display font-extrabold text-2xl sm:text-3xl">É colaborador e precisa relatar algo?</h2>
+            <p class="text-slate-300 mt-2">Registre sua manifestação de forma segura e anônima. Se você tem um protocolo, também pode acompanhar o andamento.</p>
+        </div>
+        <a href="/canal" class="shrink-0 inline-flex items-center gap-2 bg-white text-vigreen-900 hover:bg-vigold-100 font-bold px-7 py-4 rounded-xl transition">
+            <i class="fa-solid fa-shield-halved text-vigold-500"></i> Acessar o canal de denúncias
+        </a>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-24">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Perguntas frequentes</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Tire suas dúvidas</h2>
+        </div>
+        <div class="mt-12 space-y-3">
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">O denunciante pode permanecer anônimo?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Sim. O canal aceita manifestações anônimas e o denunciante acompanha o caso apenas pelo número de protocolo. Todas as informações são tratadas com confidencialidade.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">Como as denúncias são recebidas?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Pelos canais disponibilizados à empresa: formulário online, QR code, e-mail exclusivo e WhatsApp.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">Como as manifestações são tratadas?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Passam por triagem inicial, classificação e análise técnica, e depois são encaminhadas conforme o fluxo definido com a empresa contratante.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">Quem investiga as denúncias?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">A Voz Íntegra recebe, faz a triagem, classifica e encaminha as manifestações. A apuração dos fatos e as medidas cabíveis são de responsabilidade da empresa, que pode contar com nosso apoio técnico e jurídico conforme o escopo contratado.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">A empresa recebe relatórios?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Sim. A empresa recebe relatórios gerenciais periódicos com indicadores e estatísticas para apoiar decisões e melhorias.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">O canal pode fazer parte do plano de ação da NR-1?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Sim. Ele pode compor as medidas de tratamento dos riscos psicossociais, de acordo com a realidade de cada organização.</p>
+            </details>
+            <details class="reveal group rounded-2xl border border-slate-200 bg-white p-6 open:shadow-lg open:border-vigreen-200">
+                <summary class="flex items-center justify-between cursor-pointer font-semibold text-vigreen-900 gap-4">Como contratar?<i class="faq-icon fa-solid fa-plus text-vigold-500 transition-transform"></i></summary>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">Preencha o formulário abaixo. Nossa equipe entende as necessidades da sua empresa e apresenta a solução mais adequada.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- CONTATO -->
+<section id="contato" class="py-24 bg-slate-50 border-t border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-14">
+        <div class="reveal">
+            <span class="text-xs font-bold uppercase tracking-widest text-vigold-600">Vamos conversar?</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-vigreen-900 mt-3 tracking-tight">Solicite uma proposta para sua empresa.</h2>
+            <p class="text-slate-600 mt-4 text-lg">Conte um pouco sobre sua empresa e retornamos com uma proposta sob medida.</p>
+            <ul class="mt-10 space-y-5">
+                <li class="flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-vigreen-800"><i class="fa-solid fa-envelope"></i></span>
+                    <span><span class="block text-xs text-slate-500">E-mail</span><a href="mailto:contato@vozintegra.com.br" class="font-semibold text-vigreen-900 hover:text-vigold-600">contato@vozintegra.com.br</a></span>
+                </li>
+                <li class="flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-vigreen-800"><i class="fa-solid fa-location-dot"></i></span>
+                    <span><span class="block text-xs text-slate-500">Atendimento</span><span class="font-semibold text-vigreen-900">Em todo o Brasil</span></span>
+                </li>
+            </ul>
+        </div>
+
+        <form id="form-contato" class="reveal bg-white rounded-3xl border border-slate-200 shadow-xl shadow-vigreen-900/5 p-7 sm:p-9 space-y-5" novalidate>
+            <div class="grid sm:grid-cols-2 gap-5">
+                <label class="block">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Nome <span class="text-rose-500">*</span></span>
+                    <input name="nome" required minlength="2" maxlength="120" autocomplete="name" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Empresa</span>
+                    <input name="empresa" maxlength="160" autocomplete="organization" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700">E-mail <span class="text-rose-500">*</span></span>
+                    <input name="email" type="email" required maxlength="160" autocomplete="email" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500">
+                </label>
+                <label class="block">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Telefone / WhatsApp <span class="text-rose-500">*</span></span>
+                    <input name="telefone" type="tel" required minlength="8" maxlength="30" autocomplete="tel" placeholder="(00) 00000-0000" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500">
+                </label>
+            </div>
+            <label class="block">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Número de colaboradores</span>
+                <select name="colaboradores" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500">
+                    <option value="">Selecione</option>
+                    <option>Até 50</option>
+                    <option>51 a 200</option>
+                    <option>201 a 500</option>
+                    <option>501 a 1.000</option>
+                    <option>Mais de 1.000</option>
+                </select>
+            </label>
+            <label class="block">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Mensagem</span>
+                <textarea name="mensagem" rows="4" maxlength="2000" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-vigreen-500 focus:border-vigreen-500" placeholder="Conte o que sua empresa precisa (opcional)"></textarea>
+            </label>
+            <p id="contato-erro" class="hidden text-sm text-rose-600" role="alert"></p>
+            <button id="contato-btn" type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-6 py-4 rounded-xl transition disabled:opacity-60">
+                Solicitar proposta <i class="fa-solid fa-paper-plane"></i>
+            </button>
+            <p class="text-xs text-slate-500 text-center">Ao enviar, você concorda com a nossa <a href="/privacidade" class="underline hover:text-vigreen-800">Política de Privacidade</a>.</p>
+
+            <div id="contato-ok" class="hidden text-center py-6" role="status">
+                <div class="w-16 h-16 mx-auto rounded-full bg-vigreen-50 text-vigreen-800 flex items-center justify-center text-2xl"><i class="fa-solid fa-check"></i></div>
+                <h3 class="font-display font-bold text-xl text-vigreen-900 mt-4">Recebemos sua solicitação!</h3>
+                <p class="text-slate-600 text-sm mt-1">Nossa equipe entrará em contato em breve.</p>
+            </div>
+        </form>
+    </div>
+</section>
+
+</main>
+
+<!-- RODAPÉ -->
+<footer class="bg-vigreen-950 text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div class="lg:col-span-2">
+            <div class="font-display font-extrabold text-2xl"><span class="text-white">Voz</span> <span class="text-vigold-500">Íntegra</span></div>
+            <p class="mt-3 text-sm max-w-sm">Canal de denúncias e soluções em compliance para empresas de todo o Brasil.</p>
+            <p class="mt-6 text-xs font-bold tracking-[0.25em] text-vigold-500">CONFORMIDADE • SIGILO • ÉTICA</p>
+        </div>
+        <div>
+            <h3 class="text-white font-semibold text-sm">Soluções</h3>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="#solucao" class="hover:text-white">Canal de denúncias</a></li>
+                <li><a href="#como-funciona" class="hover:text-white">Gestão das manifestações</a></li>
+                <li><a href="#legislacao" class="hover:text-white">Lei nº 14.457/2022</a></li>
+                <li><a href="#legislacao" class="hover:text-white">NR-1 e riscos psicossociais</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="text-white font-semibold text-sm">Institucional</h3>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="/canal" class="hover:text-white">Fazer uma denúncia</a></li>
+                <li><a href="#faq" class="hover:text-white">Perguntas frequentes</a></li>
+                <li><a href="/privacidade" class="hover:text-white">Política de privacidade</a></li>
+                <li><a href="/termos" class="hover:text-white">Termos de uso</a></li>
+                <li><a href="mailto:contato@vozintegra.com.br" class="hover:text-white">contato@vozintegra.com.br</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs flex flex-col sm:flex-row justify-between gap-2">
+            <span>© <span id="ano">2026</span> Voz Íntegra. Todos os direitos reservados.</span>
+            <span>Atendimento em todo o Brasil</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('ano').textContent = new Date().getFullYear();
+
+    // Cabeçalho com fundo ao rolar
+    const header = document.getElementById('site-header');
+    const aoRolar = () => header.classList.toggle('scrolled', window.scrollY > 20);
+    window.addEventListener('scroll', aoRolar, { passive: true });
+    aoRolar();
+
+    // Menu do celular
+    const menuBtn = document.getElementById('menu-btn');
+    const menu = document.getElementById('menu-mobile');
+    menuBtn.addEventListener('click', () => {
+        const aberto = menu.classList.toggle('hidden') === false;
+        menuBtn.setAttribute('aria-expanded', aberto);
+        header.classList.add('scrolled');
+    });
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+
+    // Animação de entrada
+    const observador = new IntersectionObserver((entradas) => {
+        entradas.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observador.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observador.observe(el));
+
+    // Formulário de proposta: grava no Supabase; se falhar, abre o e-mail já preenchido
+    const SUPABASE_URL = 'https://vbgrkpfozgitikgiklin.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_lPOC3pQ13sTb8D7fcy0eGw_eOYWXzw0';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const form = document.getElementById('form-contato');
+    const erro = document.getElementById('contato-erro');
+    const botao = document.getElementById('contato-btn');
+
+    function mostrarSucesso() {
+        Array.from(form.children).forEach(el => { if (el.id !== 'contato-ok') el.classList.add('hidden'); });
+        document.getElementById('contato-ok').classList.remove('hidden');
+    }
+
+    form.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        erro.classList.add('hidden');
+        if (!form.checkValidity()) {
+            erro.textContent = 'Preencha nome, e-mail válido e telefone.';
+            erro.classList.remove('hidden');
+            form.reportValidity();
+            return;
+        }
+        const dados = Object.fromEntries(new FormData(form).entries());
+        Object.keys(dados).forEach(k => { dados[k] = dados[k].trim() || null; });
+
+        botao.disabled = true;
+        botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        try {
+            if (!supabaseClient) throw new Error('Supabase indisponível');
+            const { error } = await supabaseClient.from('contatos_site').insert(dados);
+            if (error) throw error;
+            mostrarSucesso();
+        } catch (e) {
+            console.error('Falha ao gravar contato:', e);
+            const corpo = [
+                `Nome: ${dados.nome}`,
+                `Empresa: ${dados.empresa || '-'}`,
+                `E-mail: ${dados.email}`,
+                `Telefone: ${dados.telefone}`,
+                `Colaboradores: ${dados.colaboradores || '-'}`,
+                '',
+                dados.mensagem || ''
+            ].join('\n');
+            window.location.href = `mailto:contato@vozintegra.com.br?subject=${encodeURIComponent('Solicitação de proposta - ' + (dados.empresa || dados.nome))}&body=${encodeURIComponent(corpo)}`;
+            botao.disabled = false;
+            botao.innerHTML = 'Solicitar proposta <i class="fa-solid fa-paper-plane"></i>';
+            erro.textContent = 'Abrimos seu aplicativo de e-mail com a mensagem pronta. Se não abrir, escreva para contato@vozintegra.com.br.';
+            erro.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>

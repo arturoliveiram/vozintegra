@@ -1,0 +1,19 @@
+{
+  "routes": [
+    { "src": "/sobre/?", "status": 308, "headers": { "Location": "/#sobre" } },
+    { "src": "/legislacao/?", "status": 308, "headers": { "Location": "/#legislacao" } },
+    { "src": "/perguntas-frequentes/?", "status": 308, "headers": { "Location": "/#faq" } },
+    { "src": "/denuncias/?", "status": 308, "headers": { "Location": "/canal" } },
+    { "src": "/politica-de-privacidade/?", "status": 308, "headers": { "Location": "/privacidade" } },
+    { "src": "/termos-de-uso/?", "status": 308, "headers": { "Location": "/termos" } },
+
+    { "src": "/canal/?", "dest": "/index.html" },
+    { "src": "/privacidade/?", "dest": "/site/privacidade.html" },
+    { "src": "/termos/?", "dest": "/site/termos.html" },
+
+    { "src": "/", "has": [{ "type": "host", "value": "vozintegra.com.br" }], "missing": [{ "type": "query", "key": "empresa" }], "dest": "/site/index.html" },
+    { "src": "/", "has": [{ "type": "host", "value": "www.vozintegra.com.br" }], "missing": [{ "type": "query", "key": "empresa" }], "dest": "/site/index.html" },
+
+    { "handle": "filesystem" }
+  ]
+}
