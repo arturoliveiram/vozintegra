@@ -124,6 +124,55 @@
             margin-left: auto;
         }
     </style>
+    <!-- Relatório gerencial (tela e impressão) -->
+    <style id="rel-css">
+        .rel-page { background:#fff; border:1px solid #e2e8f0; border-radius:20px; max-width:860px; margin:0 auto; overflow:hidden; color:#1e293b; font-family:Inter, sans-serif; }
+        .rel-head { background:#1C4428; color:#fff; padding:28px 36px; position:relative; overflow:hidden; }
+        .rel-head:after { content:""; position:absolute; right:-70px; top:-70px; width:220px; height:220px; border-radius:50%; background:#D98B1D; opacity:.16; }
+        .rel-head h2 { font-family:Outfit, Inter, sans-serif; font-weight:800; font-size:26px; margin-top:14px; letter-spacing:-.3px; }
+        .rel-head .rel-empresa { color:#f4b04d; }
+        .rel-head .rel-sub { color:#cfe0d5; font-size:13px; margin-top:4px; }
+        .rel-brand { display:flex; align-items:center; gap:10px; }
+        .rel-brand .b { background:#fff; border-radius:10px; padding:5px 9px; display:flex; align-items:center; gap:7px; }
+        .rel-brand .w { font-family:Outfit, Inter, sans-serif; font-weight:800; color:#1C4428; font-size:16px; } .rel-brand .w span { color:#D98B1D; }
+        .rel-brand .t { margin-left:auto; font-size:10px; letter-spacing:1.6px; font-weight:700; color:#f4c27a; text-transform:uppercase; }
+        .rel-body { padding:26px 36px 30px; }
+        .rel-h { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:#c27915; font-weight:800; margin:26px 0 12px; }
+        .rel-h:first-child { margin-top:0; }
+        .rel-sec { break-inside:avoid; page-break-inside:avoid; }
+        .rel-sec + .rel-sec .rel-h, .rel-sec .rel-h { margin-top:22px; }
+        .rel-sec:first-child .rel-h { margin-top:0; }
+        .rel-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+        .rel-kpi { border:1px solid #e2e8f0; border-radius:14px; padding:12px 14px; }
+        .rel-kpi.dark { background:#1C4428; border-color:#1C4428; color:#fff; }
+        .rel-kpi .v { font-family:Outfit, Inter, sans-serif; font-size:28px; font-weight:800; color:#1C4428; line-height:1.1; }
+        .rel-kpi.dark .v { color:#f4b04d; }
+        .rel-kpi .l { font-size:11.5px; color:#475569; margin-top:2px; } .rel-kpi.dark .l { color:#cfe0d5; }
+        .rel-kpi .d { font-size:11px; margin-top:4px; color:#64748b; } .rel-kpi.dark .d { color:#cfe0d5; }
+        .rel-grid2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
+        .rel-card { border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; break-inside:avoid; }
+        .rel-card h4 { font-size:13.5px; font-weight:700; color:#1C4428; margin-bottom:10px; }
+        .rel-row { display:grid; grid-template-columns:112px minmax(40px,1fr) 62px; align-items:center; gap:8px; font-size:12px; padding:3px 0; }
+        .rel-row .lb { color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .rel-row .tr { background:#f1f5f9; border-radius:4px; height:12px; }
+        .rel-row .br { height:12px; border-radius:0 4px 4px 0; min-width:2px; }
+        .rel-row .vl { text-align:right; color:#1e293b; font-variant-numeric:tabular-nums; } .rel-row .vl small { color:#64748b; }
+        .rel-stack { display:flex; gap:2px; height:22px; border-radius:6px; overflow:hidden; margin:4px 0 10px; }
+        .rel-stack div { height:100%; }
+        .rel-leg { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:#334155; }
+        .rel-leg i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+        .rel-cols svg text { font-family:Inter, sans-serif; }
+        .rel-table { width:100%; border-collapse:collapse; font-size:11.5px; }
+        .rel-table th { text-align:left; white-space:nowrap; font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; color:#64748b; border-bottom:1px solid #e2e8f0; padding:6px 8px; }
+        .rel-table td { border-bottom:1px solid #f1f5f9; padding:7px 6px; font-variant-numeric:tabular-nums; }
+        .rel-table td.n, .rel-table th.n { text-align:right; }
+        .rel-obs { list-style:none; padding:0; margin:0; }
+        .rel-obs li { position:relative; padding:5px 0 5px 20px; font-size:12.5px; line-height:1.5; color:#334155; }
+        .rel-obs li:before { content:""; position:absolute; left:2px; top:11px; width:8px; height:8px; border-radius:50%; background:#D98B1D; }
+        .rel-foot { border-top:3px solid #D98B1D; background:#f3f8f5; padding:14px 36px; font-size:10.5px; color:#64748b; display:flex; justify-content:space-between; gap:16px; }
+        .rel-empty { text-align:center; color:#64748b; font-size:13px; padding:20px; }
+        @media (max-width: 640px) { .rel-kpis { grid-template-columns:1fr 1fr; } .rel-grid2 { grid-template-columns:1fr; } .rel-body, .rel-head { padding-left:18px; padding-right:18px; } }
+    </style>
 </head>
 <body class="h-full text-slate-800 font-sans flex flex-col bg-[#f8f9f8]">
 
@@ -449,6 +498,7 @@
                     <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
                         <button id="btn-admin-denuncias" onclick="switchAdminSecao('denuncias')" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-vigreen-900 shadow-sm">Denúncias</button>
                         <button id="btn-admin-empresas" onclick="switchAdminSecao('empresas')" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500">Empresas e QR codes</button>
+                        <button id="btn-admin-relatorios" onclick="switchAdminSecao('relatorios')" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500">Relatórios</button>
                     </div>
                     <span id="admin-usuario" class="text-xs text-slate-500 ml-auto"></span>
                     <button onclick="handleAdminLogout()" class="text-xs font-bold text-vigreen-800 hover:text-vigreen-900">
@@ -487,6 +537,42 @@
                         </button>
                     </form>
                     <div id="admin-empresas-lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <!-- RELATÓRIOS -->
+                <div id="admin-secao-relatorios" class="hidden space-y-4">
+                    <div id="rel-controles" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <label class="sm:col-span-2 block">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Empresa</span>
+                                <select id="rel-empresa" class="mt-1 w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm"></select>
+                            </label>
+                            <label class="block">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">De</span>
+                                <input type="date" id="rel-de" class="mt-1 w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm">
+                            </label>
+                            <label class="block">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Até</span>
+                                <input type="date" id="rel-ate" class="mt-1 w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm">
+                            </label>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" onclick="relPeriodo('mes-passado')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">Mês passado</button>
+                            <button type="button" onclick="relPeriodo('este-mes')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">Este mês</button>
+                            <button type="button" onclick="relPeriodo('trimestre')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">Últimos 3 meses</button>
+                            <button type="button" onclick="relPeriodo('ano')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700">Este ano</button>
+                            <div class="ml-auto flex gap-2">
+                                <button type="button" onclick="gerarRelatorio()" class="bg-vigreen-800 hover:bg-vigreen-900 text-white font-bold px-5 py-2.5 rounded-xl text-sm">
+                                    <i class="fa-solid fa-chart-column text-vigold-500 mr-1.5"></i> Gerar relatório
+                                </button>
+                                <button type="button" id="rel-btn-pdf" onclick="baixarRelatorioPdf()" class="hidden bg-vigold-500 hover:bg-vigold-600 text-vigreen-950 font-bold px-5 py-2.5 rounded-xl text-sm">
+                                    <i class="fa-solid fa-file-pdf mr-1.5"></i> Baixar PDF
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-500">O relatório traz só números: nunca o conteúdo das denúncias nem a identidade de ninguém. No "Baixar PDF", escolha <strong>Salvar como PDF</strong> na janela de impressão.</p>
+                    </div>
+                    <div id="relatorio"></div>
                 </div>
             </div>
         </section>
@@ -833,7 +919,10 @@
             document.getElementById('admin-secao-empresas').classList.toggle('hidden', secao !== 'empresas');
             document.getElementById('btn-admin-denuncias').className = secao === 'denuncias' ? ativo : inativo;
             document.getElementById('btn-admin-empresas').className = secao === 'empresas' ? ativo : inativo;
+            document.getElementById('admin-secao-relatorios').classList.toggle('hidden', secao !== 'relatorios');
+            document.getElementById('btn-admin-relatorios').className = secao === 'relatorios' ? ativo : inativo;
             if (secao === 'empresas') carregarEmpresasAdmin();
+            if (secao === 'relatorios') prepararRelatorios();
         }
 
         // ADMIN: EMPRESAS E QR CODES
@@ -1028,6 +1117,304 @@
                         ? `<li><a class="text-vigreen-800 underline" target="_blank" rel="noopener" href="${escapeHtml(url)}">${escapeHtml(a.name)}</a></li>`
                         : `<li>${escapeHtml(a.name)}</li>`;
                 }).join('') + '</ul>';
+        }
+
+        // ====== RELATÓRIO GERENCIAL ======
+        const REL_GRAVIDADES = ['Baixa', 'Média', 'Alta', 'Crítica'];
+        const REL_COR_GRAVIDADE = { 'Baixa': '#f4dcaf', 'Média': '#D98B1D', 'Alta': '#a1600f', 'Crítica': '#6b3f14' };
+        const REL_MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+        let relUltimo = null;
+
+        function relIso(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        function relDataLocal(iso, fimDoDia) {
+            const [a, m, d] = iso.split('-').map(Number);
+            return fimDoDia ? new Date(a, m - 1, d, 23, 59, 59, 999) : new Date(a, m - 1, d, 0, 0, 0, 0);
+        }
+        function relFmtData(d) { return d.toLocaleDateString('pt-BR'); }
+        function relPct(parte, total) { return total ? Math.round((parte / total) * 100) : 0; }
+        function relNum(n) { return Number(n).toLocaleString('pt-BR'); }
+
+        function relPeriodo(tipo) {
+            const hoje = new Date();
+            let de, ate;
+            if (tipo === 'este-mes') { de = new Date(hoje.getFullYear(), hoje.getMonth(), 1); ate = hoje; }
+            else if (tipo === 'trimestre') { de = new Date(hoje.getFullYear(), hoje.getMonth() - 3, 1); ate = new Date(hoje.getFullYear(), hoje.getMonth(), 0); }
+            else if (tipo === 'ano') { de = new Date(hoje.getFullYear(), 0, 1); ate = hoje; }
+            else { de = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1); ate = new Date(hoje.getFullYear(), hoje.getMonth(), 0); }
+            document.getElementById('rel-de').value = relIso(de);
+            document.getElementById('rel-ate').value = relIso(ate);
+        }
+
+        async function prepararRelatorios() {
+            if (!document.getElementById('rel-de').value) relPeriodo('mes-passado');
+            if (state.adminEmpresas.length === 0) {
+                const { data } = await supabaseClient.from('empresas').select('id, slug, nome, status, codigo_acesso, created_at').order('nome');
+                state.adminEmpresas = data || [];
+            }
+            const sel = document.getElementById('rel-empresa');
+            const atual = sel.value;
+            sel.innerHTML = '<option value="">Todas as empresas</option>' +
+                state.adminEmpresas.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                    .map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.nome)}</option>`).join('');
+            if (atual) sel.value = atual;
+        }
+
+        // Prazo de triagem: graves (Alta/Crítica) em 24 h; demais em 3 dias úteis (seg a sex)
+        function relEhGrave(d) { return d.gravidade === 'Alta' || d.gravidade === 'Crítica'; }
+        function relPrazoLimite(d) {
+            const ini = new Date(d.created_at);
+            if (relEhGrave(d)) return new Date(ini.getTime() + 24 * 3600 * 1000);
+            const lim = new Date(ini);
+            let uteis = 0;
+            while (uteis < 3) {
+                lim.setDate(lim.getDate() + 1);
+                const dia = lim.getDay();
+                if (dia !== 0 && dia !== 6) uteis++;
+            }
+            return lim;
+        }
+        // no_prazo | fora_prazo | aguardando | atrasada | sem_registro
+        function relSituacaoPrazo(d, agora) {
+            const limite = relPrazoLimite(d);
+            if (d.triada_em) return new Date(d.triada_em) <= limite ? 'no_prazo' : 'fora_prazo';
+            if (d.status && d.status !== 'Nova') return 'sem_registro';
+            return agora > limite ? 'atrasada' : 'aguardando';
+        }
+
+        function relContar(lista, chave, ordem) {
+            const mapa = new Map();
+            (ordem || []).forEach(k => mapa.set(k, 0));
+            lista.forEach(d => { const k = chave(d) || 'Não informado'; mapa.set(k, (mapa.get(k) || 0) + 1); });
+            let itens = [...mapa.entries()].map(([label, valor]) => ({ label, valor }));
+            if (!ordem) itens.sort((a, b) => b.valor - a.valor);
+            return itens;
+        }
+
+        function relBarras(itens, total, cor) {
+            const max = Math.max(1, ...itens.map(i => i.valor));
+            return itens.map(i => {
+                const c = typeof cor === 'function' ? cor(i.label) : cor;
+                return `<div class="rel-row" title="${escapeHtml(i.label)}: ${i.valor} (${relPct(i.valor, total)}%)">
+                    <span class="lb">${escapeHtml(i.label)}</span>
+                    <span class="tr"><span class="br" style="display:block;width:${(i.valor / max) * 100}%;background:${c}${i.valor ? '' : ';min-width:0'}"></span></span>
+                    <span class="vl"><b>${i.valor}</b> <small>${relPct(i.valor, total)}%</small></span></div>`;
+            }).join('');
+        }
+
+        function relColunasMensais(meses) {
+            const W = 760, H = 190, padL = 8, padB = 26, padT = 18;
+            const max = Math.max(1, ...meses.map(m => m.valor));
+            const passo = (W - padL * 2) / meses.length;
+            const bw = Math.min(38, passo - 10);
+            const barras = meses.map((m, i) => {
+                const h = (m.valor / max) * (H - padB - padT);
+                const x = padL + i * passo + (passo - bw) / 2;
+                const y = H - padB - h;
+                const cor = m.destaque ? '#1C4428' : '#9fc2aa';
+                const r = Math.min(4, h / 2);
+                const caminho = h > 0
+                    ? `<path d="M${x},${H - padB} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${H - padB} Z" fill="${cor}"><title>${m.rotulo}: ${m.valor}</title></path>`
+                    : '';
+                const valor = m.valor ? `<text x="${x + bw / 2}" y="${y - 5}" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">${m.valor}</text>` : '';
+                return `${caminho}${valor}<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10.5" fill="${m.destaque ? '#1C4428' : '#64748b'}" font-weight="${m.destaque ? 700 : 400}">${m.rotulo}</text>`;
+            }).join('');
+            return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Denúncias por mês"><line x1="${padL}" x2="${W - padL}" y1="${H - padB}" y2="${H - padB}" stroke="#cbd5e1"/>${barras}</svg>`;
+        }
+
+        function relStack(partes, total) {
+            if (!total) return '<div class="rel-stack" style="background:#f1f5f9"></div>';
+            return `<div class="rel-stack">${partes.filter(p => p.valor).map(p =>
+                `<div style="width:${(p.valor / total) * 100}%;background:${p.cor}" title="${escapeHtml(p.label)}: ${p.valor}"></div>`).join('')}</div>
+                <div class="rel-leg">${partes.map(p => `<span><i style="background:${p.cor}"></i>${escapeHtml(p.label)}: <b>${p.valor}</b> (${relPct(p.valor, total)}%)</span>`).join('')}</div>`;
+        }
+
+        function relDelta(atual, anterior) {
+            if (!anterior && !atual) return 'igual ao período anterior';
+            if (!anterior) return `período anterior: 0`;
+            const v = Math.round(((atual - anterior) / anterior) * 100);
+            if (v === 0) return `igual ao período anterior (${anterior})`;
+            return `${v > 0 ? '▲' : '▼'} ${Math.abs(v)}% vs. período anterior (${anterior})`;
+        }
+
+        function relHoras(ms) {
+            const h = ms / 3600000;
+            if (h < 48) return `${h < 10 ? h.toFixed(1).replace('.', ',') : Math.round(h)} h`;
+            return `${(h / 24).toFixed(1).replace('.', ',')} dias`;
+        }
+
+        async function gerarRelatorio() {
+            const deIso = document.getElementById('rel-de').value;
+            const ateIso = document.getElementById('rel-ate').value;
+            const empresaId = document.getElementById('rel-empresa').value;
+            if (!deIso || !ateIso) { showToast('Escolha o período.', 'rose'); return; }
+            const de = relDataLocal(deIso, false), ate = relDataLocal(ateIso, true);
+            if (ate < de) { showToast('A data final é anterior à inicial.', 'rose'); return; }
+
+            const dur = ate.getTime() - de.getTime() + 1;
+            const antDe = new Date(de.getTime() - dur), antAte = new Date(de.getTime() - 1);
+            const inicio12 = new Date(ate.getFullYear(), ate.getMonth() - 11, 1);
+            const buscarDe = antDe < inicio12 ? antDe : inicio12;
+
+            const alvo = document.getElementById('relatorio');
+            alvo.innerHTML = '<div class="rel-empty">Gerando relatório...</div>';
+            document.getElementById('rel-btn-pdf').classList.add('hidden');
+
+            let q = supabaseClient.from('denuncias').select('*')
+                .gte('created_at', buscarDe.toISOString()).lte('created_at', ate.toISOString());
+            if (empresaId) q = q.eq('empresa_id', empresaId);
+            const { data, error } = await q;
+            if (error) { alvo.innerHTML = ''; showToast('Erro ao gerar relatório: ' + error.message, 'rose'); return; }
+
+            const todas = data || [];
+            const entre = (d, a, b) => { const t = new Date(d.created_at); return t >= a && t <= b; };
+            const atual = todas.filter(d => entre(d, de, ate));
+            const anterior = todas.filter(d => entre(d, antDe, antAte));
+            const empresa = state.adminEmpresas.find(e => e.id === empresaId);
+            const nomeEmpresa = empresa ? empresa.nome : 'Todas as empresas';
+
+            relUltimo = { nomeEmpresa, de, ate };
+            alvo.innerHTML = montarRelatorio({ atual, anterior, todas, de, ate, inicio12, nomeEmpresa });
+            document.getElementById('rel-btn-pdf').classList.remove('hidden');
+            alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function montarRelatorio({ atual, anterior, todas, de, ate, inicio12, nomeEmpresa }) {
+            const agora = new Date();
+            const total = atual.length;
+            const anonimas = atual.filter(d => !d.denunciante).length;
+            const graves = atual.filter(relEhGrave).length;
+            const encerradas = atual.filter(d => d.status === 'Concluída' || d.status === 'Arquivada').length;
+            const abertas = total - encerradas;
+
+            const prazos = atual.map(d => ({ d, s: relSituacaoPrazo(d, agora) }));
+            // Base do indicador: triagens com data registrada + casos ainda sem triagem e com prazo vencido
+            const baseprazo = prazos.filter(p => p.s === 'no_prazo' || p.s === 'fora_prazo' || p.s === 'atrasada');
+            const noPrazo = prazos.filter(p => p.s === 'no_prazo').length;
+            const pctPrazo = baseprazo.length ? relPct(noPrazo, baseprazo.length) : null;
+            const tempos = atual.filter(d => d.triada_em).map(d => new Date(d.triada_em) - new Date(d.created_at)).filter(ms => ms >= 0);
+            const tempoMedio = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : null;
+            const resolucoes = atual.filter(d => d.encerrada_em).map(d => new Date(d.encerrada_em) - new Date(d.created_at)).filter(ms => ms >= 0);
+            const resolMedia = resolucoes.length ? resolucoes.reduce((a, b) => a + b, 0) / resolucoes.length : null;
+
+            const categorias = relContar(atual, d => d.categoria);
+            const gravidades = relContar(atual, d => d.gravidade, REL_GRAVIDADES);
+            const status = relContar(atual, d => d.status, STATUS_OPCOES);
+
+            // Evolução: 12 meses até o fim do período
+            const meses = [];
+            for (let i = 0; i < 12; i++) {
+                const ini = new Date(inicio12.getFullYear(), inicio12.getMonth() + i, 1);
+                const fim = new Date(ini.getFullYear(), ini.getMonth() + 1, 0, 23, 59, 59, 999);
+                meses.push({
+                    rotulo: `${REL_MESES[ini.getMonth()]}/${String(ini.getFullYear()).slice(2)}`,
+                    valor: todas.filter(d => { const t = new Date(d.created_at); return t >= ini && t <= fim; }).length,
+                    destaque: fim >= de && ini <= ate
+                });
+            }
+
+            // Prazos por gravidade
+            const linhasPrazo = REL_GRAVIDADES.map(g => {
+                const ps = prazos.filter(p => p.d.gravidade === g);
+                const c = s => ps.filter(p => p.s === s).length;
+                return { g, total: ps.length, no: c('no_prazo'), fora: c('fora_prazo'), atrasada: c('atrasada'), aguardando: c('aguardando'), sem: c('sem_registro') };
+            }).filter(l => l.total);
+            const semRegistro = prazos.filter(p => p.s === 'sem_registro').length;
+            const atrasadas = prazos.filter(p => p.s === 'atrasada').length;
+
+            // Observações automáticas
+            const obs = [];
+            if (!total) {
+                obs.push('Nenhuma manifestação foi registrada no período. Isso pode indicar um bom ambiente, mas também pouca divulgação: recomenda-se reforçar a comunicação do canal (cartazes com o QR code, e-mail interno, integração de novos colaboradores).');
+            } else {
+                obs.push(`Foram registradas <b>${total}</b> manifestaç${total === 1 ? 'ão' : 'ões'} no período (${relDelta(total, anterior.length)}).`);
+                const top = categorias[0];
+                if (top) obs.push(`A categoria mais frequente foi <b>${escapeHtml(top.label)}</b>, com ${top.valor} caso${top.valor === 1 ? '' : 's'} (${relPct(top.valor, total)}% do total).`);
+                if (graves) obs.push(`<b>${graves}</b> manifestaç${graves === 1 ? 'ão foi classificada' : 'ões foram classificadas'} com gravidade alta ou crítica (${relPct(graves, total)}%).`);
+                if (pctPrazo !== null) obs.push(`<b>${pctPrazo}%</b> das manifestações com prazo já apurável foram triadas dentro do prazo (24 h para casos graves; 3 dias úteis para os demais).`);
+                if (atrasadas) obs.push(`<b>${atrasadas}</b> manifestaç${atrasadas === 1 ? 'ão aguarda' : 'ões aguardam'} triagem com o prazo vencido.`);
+                if (abertas) obs.push(`${abertas} caso${abertas === 1 ? ' segue' : 's seguem'} em aberto e ${encerradas} ${encerradas === 1 ? 'foi encerrado' : 'foram encerrados'}.`);
+                obs.push(`${relPct(anonimas, total)}% dos relatos foram anônimos${relPct(anonimas, total) >= 70 ? ', o que indica que os colaboradores ainda preferem não se identificar: vale reforçar a mensagem de proteção contra retaliação' : ''}.`);
+                const assedio = atual.filter(d => /ass[ée]dio/i.test(d.categoria || '')).length;
+                if (assedio && relPct(assedio, total) >= 30) obs.push(`Relatos de assédio somam ${relPct(assedio, total)}% do total. Sugere-se reforçar as ações de prevenção previstas na Lei nº 14.457/2022, como o treinamento de lideranças, e considerar o tema no inventário de riscos psicossociais (NR-1).`);
+            }
+
+            const kpi = (v, l, d, dark) => `<div class="rel-kpi${dark ? ' dark' : ''}"><div class="v">${v}</div><div class="l">${l}</div>${d ? `<div class="d">${d}</div>` : ''}</div>`;
+            const logo = '<svg viewBox="0 0 160 140" width="30" height="26" xmlns="http://www.w3.org/2000/svg"><path d="M12 18 L48 18 L76 96 L104 18 L138 18 L88 128 L62 128 Z" fill="#1C4428"/><rect x="114" y="52" width="24" height="76" rx="4" fill="#D98B1D"/><circle cx="126" cy="28" r="16" fill="#D98B1D"/></svg>';
+
+            const tabelaPrazo = linhasPrazo.length ? `<table class="rel-table"><thead><tr><th>Gravidade · prazo</th><th class="n">Total</th><th class="n">No prazo</th><th class="n">Fora</th><th class="n">Aguard.</th></tr></thead><tbody>
+                ${linhasPrazo.map(l => `<tr><td><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:${REL_COR_GRAVIDADE[l.g]}"></i>${l.g} <span style="color:#64748b">· ${l.g === 'Alta' || l.g === 'Crítica' ? '24 h' : '3 dias úteis'}</span></td><td class="n">${l.total}</td><td class="n">${l.no}</td><td class="n">${l.fora + l.atrasada}</td><td class="n">${l.aguardando}</td></tr>`).join('')}
+                </tbody></table>` : '<p class="rel-empty">Sem manifestações no período.</p>';
+
+            return `<div class="rel-page">
+                <div class="rel-head">
+                    <div class="rel-brand"><span class="b">${logo}<span class="w">Voz <span>Íntegra</span></span></span><span class="t">Relatório gerencial · Canal de ética</span></div>
+                    <h2>Relatório do canal de denúncias · <span class="rel-empresa">${escapeHtml(nomeEmpresa)}</span></h2>
+                    <div class="rel-sub">Período: ${relFmtData(de)} a ${relFmtData(ate)} · Emitido em ${relFmtData(agora)}</div>
+                </div>
+                <div class="rel-body">
+                    <section class="rel-sec"><div class="rel-h">Resumo do período</div>
+                    <div class="rel-kpis">
+                        ${kpi(relNum(total), 'manifestações recebidas', relDelta(total, anterior.length), true)}
+                        ${kpi(`${relPct(graves, total)}%`, 'gravidade alta ou crítica', `${graves} caso${graves === 1 ? '' : 's'}`)}
+                        ${kpi(pctPrazo === null ? '—' : `${pctPrazo}%`, 'triagens dentro do prazo', tempoMedio === null ? 'sem triagens com data registrada' : `tempo médio: ${relHoras(tempoMedio)}`)}
+                        ${kpi(relNum(abertas), 'casos em aberto', `${encerradas} encerrado${encerradas === 1 ? '' : 's'}${resolMedia === null ? '' : ` · média ${relHoras(resolMedia)}`}`)}
+                    </div>
+
+                    </section>
+                    <section class="rel-sec"><div class="rel-h">Evolução mensal (últimos 12 meses)</div>
+                    <div class="rel-card rel-cols">${relColunasMensais(meses)}
+                        <div class="rel-leg"><span><i style="background:#1C4428"></i>Período do relatório</span><span><i style="background:#9fc2aa"></i>Meses anteriores</span></div></div>
+
+                    </section>
+                    <section class="rel-sec"><div class="rel-h">Perfil das manifestações</div>
+                    <div class="rel-grid2">
+                        <div class="rel-card"><h4>Por categoria</h4>${total ? relBarras(categorias, total, '#2f7445') : '<p class="rel-empty">Sem dados</p>'}</div>
+                        <div class="rel-card"><h4>Por gravidade</h4>${relBarras(gravidades, total, g => REL_COR_GRAVIDADE[g] || '#94a3b8')}
+                            <h4 style="margin-top:16px">Identificação</h4>
+                            ${relStack([{ label: 'Anônimas', valor: anonimas, cor: '#2f7445' }, { label: 'Identificadas', valor: total - anonimas, cor: '#D98B1D' }], total)}</div>
+                    </div>
+
+                    </section>
+                    <section class="rel-sec"><div class="rel-h">Andamento e prazos</div>
+                    <div class="rel-grid2" style="grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)">
+                        <div class="rel-card"><h4>Situação dos casos</h4>${relBarras(status, total, '#1C4428')}</div>
+                        <div class="rel-card"><h4>Prazos de triagem por gravidade</h4>${tabelaPrazo}
+                            <p style="font-size:10.5px;color:#64748b;margin-top:8px">"Fora" inclui casos ainda sem triagem com o prazo vencido. Dias úteis: segunda a sexta, sem contar feriados.</p>
+                            ${semRegistro ? `<p style="font-size:10.5px;color:#64748b;margin-top:8px">${semRegistro} caso${semRegistro === 1 ? '' : 's'} anterior${semRegistro === 1 ? '' : 'es'} ao registro automático da data de triagem não ${semRegistro === 1 ? 'entra' : 'entram'} no cálculo de prazo.</p>` : ''}</div>
+                    </div>
+
+                    </section>
+                    <section class="rel-sec"><div class="rel-h">Destaques e recomendações</div>
+                    <div class="rel-card"><ul class="rel-obs">${obs.map(o => `<li>${o}</li>`).join('')}</ul></div>
+                    </section>
+                </div>
+                <div class="rel-foot">
+                    <span>Relatório estatístico: não contém o conteúdo das manifestações nem a identificação de denunciantes. Em grupos pequenos, trate os números com cautela para preservar o sigilo.</span>
+                    <span style="white-space:nowrap">Voz Íntegra · ErgoHealth Ltda. · CNPJ 58.368.581/0001-07<br>contato@vozintegra.com.br · (31) 99889-5279</span>
+                </div>
+            </div>`;
+        }
+
+        function baixarRelatorioPdf() {
+            const conteudo = document.getElementById('relatorio').innerHTML;
+            if (!conteudo || !relUltimo) return;
+            const css = document.getElementById('rel-css').textContent;
+            const titulo = `Relatório Voz Íntegra - ${relUltimo.nomeEmpresa} - ${relFmtData(relUltimo.de)} a ${relFmtData(relUltimo.ate)}`;
+            const w = window.open('', '_blank');
+            if (!w) { showToast('Permita pop-ups para baixar o PDF.', 'rose'); return; }
+            w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(titulo)}</title>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+                <style>${css}
+                @page { size: A4; margin: 8mm; }
+                body { margin: 0; background: #fff; }
+                .rel-page { border: 0; border-radius: 0; max-width: none; }
+                * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                </style></head><body>${conteudo}</body></html>`);
+            w.document.close();
+            w.focus();
+            setTimeout(() => w.print(), 700);
         }
 
         async function salvarStatusAdmin() {
