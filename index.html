@@ -217,11 +217,20 @@
             }
         }
 
+        // A aba Gestão não aparece para o denunciante: só em /gestao (ou ?gestao)
+        // ou quando a equipe já está logada neste aparelho.
+        const MODO_GESTAO = /^\/gestao\/?$/.test(window.location.pathname)
+            || new URLSearchParams(window.location.search).has('gestao');
+
         // INICIALIZAR
         window.addEventListener('load', async () => {
             carregarEmpresaDoLink();
             const { data } = await supabaseClient.auth.getSession();
             state.adminSession = data.session;
+            if (MODO_GESTAO || data.session) {
+                document.getElementById('btn-tab-admin').style.display = '';
+            }
+            if (MODO_GESTAO) switchTab('admin');
             supabaseClient.auth.onAuthStateChange((_evento, sessao) => {
                 state.adminSession = sessao;
                 if (!document.getElementById('view-admin').classList.contains('hidden')) renderAdminView();
@@ -258,7 +267,7 @@
                     <button id="btn-tab-consultar" onclick="switchTab('consultar')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-vigreen-800/50 transition-all duration-200">
                         <i class="fa-solid fa-magnifying-glass mr-1.5"></i>Consultar <span class="hidden sm:inline">Status</span>
                     </button>
-                    <button id="btn-tab-admin" onclick="switchTab('admin')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-vigreen-800/50 transition-all duration-200 border-l border-vigreen-800 ml-1">
+                    <button id="btn-tab-admin" onclick="switchTab('admin')" style="display:none" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-vigreen-800/50 transition-all duration-200 border-l border-vigreen-800 ml-1">
                         <i class="fa-solid fa-user-shield mr-1.5 text-vigold-500"></i>Gestão
                     </button>
                 </nav>
@@ -315,7 +324,7 @@
                                 <input type="radio" name="tipo_anonimato" value="anonimo" checked onchange="toggleIdentificacaoFields(false)" class="mt-1">
                                 <div class="text-xs">
                                     <div class="font-bold text-slate-900 text-sm mb-0.5"><i class="fa-solid fa-user-ninja mr-1.5 text-vigreen-800"></i> Relato 100% Anônimo</div>
-                                    <div class="text-slate-500">Sua identidade não é coletada.</div>
+                                    <div class="text-slate-500">Sua identidade não é coletada. Não gravamos IP nem dados do aparelho.</div>
                                 </div>
                             </label>
                             <label class="border-2 border-slate-200 bg-slate-50 p-4 rounded-2xl flex items-start gap-3.5 cursor-pointer hover:bg-slate-100 transition has-[:checked]:border-vigreen-800 has-[:checked]:bg-vigreen-50/40">
