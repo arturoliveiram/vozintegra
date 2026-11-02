@@ -8,6 +8,7 @@
     { "src": "/termos-de-uso/?", "status": 308, "headers": { "Location": "/termos" } },
 
     { "src": "/canal/?", "dest": "/index.html" },
+    { "src": "/gestao/?", "dest": "/index.html" },
     { "src": "/privacidade/?", "dest": "/site/privacidade.html" },
     { "src": "/termos/?", "dest": "/site/termos.html" },
 
