@@ -1,25 +1,52 @@
-# O plano gratuito do Supabase pausa o banco depois de 7 dias sem uso,
-# e aí o canal de denúncias para de funcionar. Esta rotina faz uma consulta
-# leve a cada 2 dias para o banco continuar ativo.
+# O plano gratuito do Supabase pausa o projeto quando acha que ele não teve
+# "atividade suficiente" em 7 dias, e aí o canal de denúncias para de funcionar.
+# Uma consulta a cada 2 dias não foi suficiente (o Supabase mandou aviso em
+# 08/11/2026 mesmo com a rotina dando certo). Agora a rotina roda 2 vezes por
+# dia e usa várias partes do Supabase (banco, tabela, login e arquivos), como
+# um acesso real ao site faria.
 name: Manter Supabase ativo
 
 on:
   schedule:
-    - cron: "17 12 */2 * *"
+    - cron: "17 11 * * *"
+    - cron: "47 23 * * *"
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://vbgrkpfozgitikgiklin.supabase.co
+      # Chave pública (a mesma usada no index.html)
+      SUPABASE_KEY: sb_publishable_lPOC3pQ13sTb8D7fcy0eGw_eOYWXzw0
     steps:
-      - name: Consultar o banco
-        env:
-          SUPABASE_URL: https://vbgrkpfozgitikgiklin.supabase.co
-          # Chave pública (a mesma usada no index.html)
-          SUPABASE_KEY: sb_publishable_lPOC3pQ13sTb8D7fcy0eGw_eOYWXzw0
+      - name: Consultar o banco (função usada pelo canal)
         run: |
-          curl --fail --silent --show-error --retry 3 --retry-delay 30 \
-            -X POST "$SUPABASE_URL/rest/v1/rpc/empresa_por_codigo" \
+          for i in 1 2 3; do
+            curl --fail --silent --show-error --retry 3 --retry-delay 30 \
+              -X POST "$SUPABASE_URL/rest/v1/rpc/empresa_por_codigo" \
+              -H "apikey: $SUPABASE_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"p_codigo":"manter-ativo"}'
+            echo
+            sleep 5
+          done
+
+      - name: Ler uma tabela
+        run: |
+          curl --silent --show-error --retry 3 --retry-delay 30 \
+            -o /dev/null -w "empresas: HTTP %{http_code}\n" \
+            "$SUPABASE_URL/rest/v1/empresas?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY"
+
+      - name: Verificar login e arquivos
+        run: |
+          curl --silent --show-error --retry 3 --retry-delay 30 \
+            -o /dev/null -w "auth: HTTP %{http_code}\n" \
+            "$SUPABASE_URL/auth/v1/health" \
+            -H "apikey: $SUPABASE_KEY"
+          curl --silent --show-error --retry 3 --retry-delay 30 \
+            -o /dev/null -w "storage: HTTP %{http_code}\n" \
+            "$SUPABASE_URL/storage/v1/bucket" \
             -H "apikey: $SUPABASE_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"p_codigo":"manter-ativo"}'
+            -H "Authorization: Bearer $SUPABASE_KEY"
